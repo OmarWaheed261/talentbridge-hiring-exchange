@@ -18,6 +18,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import { useAuth } from "@/lib/auth";
+import { dispatchN8nEvent } from "@/lib/n8n-dispatch.functions";
 
 export const Route = createFileRoute("/_authenticated/candidates")({
   head: () => ({
