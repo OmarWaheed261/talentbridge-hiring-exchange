@@ -197,6 +197,62 @@ export type Database = {
         }
         Relationships: []
       }
+      export_jobs: {
+        Row: {
+          completed_at: string | null
+          consultancy_id: string
+          created_at: string
+          error: string | null
+          file_path: string | null
+          filters: Json
+          format: string
+          id: string
+          page_key: string
+          row_count: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          consultancy_id: string
+          created_at?: string
+          error?: string | null
+          file_path?: string | null
+          filters?: Json
+          format: string
+          id?: string
+          page_key: string
+          row_count?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          consultancy_id?: string
+          created_at?: string
+          error?: string | null
+          file_path?: string | null
+          filters?: Json
+          format?: string
+          id?: string
+          page_key?: string
+          row_count?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "export_jobs_consultancy_id_fkey"
+            columns: ["consultancy_id"]
+            isOneToOne: false
+            referencedRelation: "consultancies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integration_settings: {
         Row: {
           consultancy_id: string
