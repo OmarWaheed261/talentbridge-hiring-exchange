@@ -5,7 +5,7 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import {
   Search, RefreshCw, Download, ExternalLink, Trash2, Zap, Filter, Radio,
-  ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, FileSpreadsheet, FileText,
+  ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, FileSpreadsheet, FileText, History,
 } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
@@ -29,6 +29,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SavedViewsBar } from "@/components/SavedViewsBar";
+import { ExportHistoryDialog } from "@/components/ExportHistoryDialog";
 
 const SORTABLE = ["created_at", "posted_date", "company_name", "location", "source", "status", "job_title"] as const;
 type SortKey = (typeof SORTABLE)[number];
@@ -85,7 +86,7 @@ const statusVariants: Record<string, string> = {
 
 function JobCollectionPage() {
   const qc = useQueryClient();
-  const { roles } = useAuth();
+  const { roles, user } = useAuth();
   const isAdmin = roles.includes("super_admin");
   const params = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
@@ -107,6 +108,7 @@ function JobCollectionPage() {
 
   const [selected, setSelected] = useState<CollectedJob | null>(null);
   const [live, setLive] = useState(true);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   // Main paginated query — applies all filters + sort + range on the server
   const { data: result, isLoading, refetch, isFetching } = useQuery({
@@ -399,6 +401,25 @@ function JobCollectionPage() {
       toast.loading(`Building ${label} file…`, { id: toastId });
       if (format === "csv") exportCsv(rows, scope);
       else exportXlsx(rows, scope);
+      // Record audit entry (best-effort — never block the download)
+      if (user) {
+        const { q, status, source, company, location: loc, skill, sort, dir } = params;
+        supabase
+          .from("export_audit_log")
+          .insert({
+            user_id: user.id,
+            page_key: "job-collection",
+            format,
+            scope,
+            row_count: rows.length,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            filters: { q, status, source, company, location: loc, skill, sort, dir } as any,
+          })
+          .then(({ error }) => {
+            if (error) console.warn("export audit log failed:", error.message);
+            else qc.invalidateQueries({ queryKey: ["export_audit_log"] });
+          });
+      }
       toast.success(`${label} download started`, {
         id: toastId,
         description: `${rows.length.toLocaleString()} job${rows.length === 1 ? "" : "s"} exported`,
@@ -482,6 +503,10 @@ function JobCollectionPage() {
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleExport("xlsx", "all")}>
                   <FileSpreadsheet className="h-4 w-4 mr-2" /> Excel (.xlsx)
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setHistoryOpen(true)}>
+                  <History className="h-4 w-4 mr-2" /> Export history…
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -761,6 +786,7 @@ function JobCollectionPage() {
           )}
         </DialogContent>
       </Dialog>
+      <ExportHistoryDialog open={historyOpen} onOpenChange={setHistoryOpen} pageKey="job-collection" />
     </>
   );
 }
