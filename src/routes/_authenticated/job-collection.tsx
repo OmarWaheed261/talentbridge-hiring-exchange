@@ -399,6 +399,25 @@ function JobCollectionPage() {
       toast.loading(`Building ${label} file…`, { id: toastId });
       if (format === "csv") exportCsv(rows, scope);
       else exportXlsx(rows, scope);
+      // Record audit entry (best-effort — never block the download)
+      if (user) {
+        const { q, status, source, company, location: loc, skill, sort, dir } = params;
+        supabase
+          .from("export_audit_log")
+          .insert({
+            user_id: user.id,
+            page_key: "job-collection",
+            format,
+            scope,
+            row_count: rows.length,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            filters: { q, status, source, company, location: loc, skill, sort, dir } as any,
+          })
+          .then(({ error }) => {
+            if (error) console.warn("export audit log failed:", error.message);
+            else qc.invalidateQueries({ queryKey: ["export_audit_log"] });
+          });
+      }
       toast.success(`${label} download started`, {
         id: toastId,
         description: `${rows.length.toLocaleString()} job${rows.length === 1 ? "" : "s"} exported`,
