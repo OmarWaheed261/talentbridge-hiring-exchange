@@ -28,6 +28,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { SavedViewsBar } from "@/components/SavedViewsBar";
 
 const SORTABLE = ["created_at", "posted_date", "company_name", "location", "source", "status", "job_title"] as const;
 type SortKey = (typeof SORTABLE)[number];
