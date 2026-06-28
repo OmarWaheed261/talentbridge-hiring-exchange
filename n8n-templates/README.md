@@ -23,6 +23,7 @@ Ready-to-import n8n workflows that call the TalentBridge AI public API.
 | `ingest-jobs-from-source.json` | Scrape/fetch jobs from an external source and POST them into TalentBridge | Cron — hourly |
 | `ingest-candidate-submission.json` | Receive a candidate (resume parsed upstream, ATS form, email parser) and POST into TalentBridge | Webhook |
 | `update-candidate-status.json` | Move a candidate to a new pipeline status (e.g. when an interview is scheduled) | Webhook |
+| `sync-job-status-changes.json` | Stream every job status change out of TalentBridge to your downstream system, then acknowledge so each event is delivered exactly once | Cron — every minute |
 
 ## Endpoint cheat-sheet
 
@@ -34,3 +35,14 @@ All endpoints require header `x-n8n-secret: $N8N_WEBHOOK_SECRET`.
 - `POST /api/public/n8n/candidates` — body: candidate object or array (≤100)
 - `PATCH /api/public/n8n/candidates` — body: `{ id, status?, notes? }`
 - `POST /api/public/n8n/notify` — body: `{ user_id, title, message, type? }`
+- `GET  /api/public/n8n/job-status-events?limit=100` — unprocessed job status changes (with full job snapshot)
+- `POST /api/public/n8n/job-status-events` — body: `{ ids: [uuid] }` to mark events processed
+
+## How job status sync works
+
+Whenever a job's `status` column changes, a database trigger writes a row to
+`job_status_events` (an outbox). The `sync-job-status-changes` workflow polls
+`GET /api/public/n8n/job-status-events` every minute, fans each event out to
+your destination (replace the **Shape payload** node), and `POST`s the
+processed IDs back so the same event is never delivered twice.
+
