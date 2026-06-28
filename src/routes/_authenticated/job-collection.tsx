@@ -502,15 +502,19 @@ function JobCollectionPage() {
               />
             </div>
             <button
+              type="button"
               onClick={() => setLive((v) => !v)}
-              className={`inline-flex items-center gap-2 text-xs px-3 py-2 rounded-lg border transition-base ${
+              aria-pressed={live}
+              aria-label={live ? "Realtime updates on — click to pause" : "Realtime updates paused — click to resume"}
+              className={`inline-flex items-center gap-2 text-xs px-3 py-2 rounded-lg border transition-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                 live ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10" : "border-border text-muted-foreground"
               }`}
               title="Toggle realtime updates"
             >
-              <Radio className={`h-3.5 w-3.5 ${live ? "animate-pulse" : ""}`} />
+              <Radio aria-hidden="true" className={`h-3.5 w-3.5 ${live ? "animate-pulse" : ""}`} />
               {live ? "Live" : "Paused"}
             </button>
+
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
