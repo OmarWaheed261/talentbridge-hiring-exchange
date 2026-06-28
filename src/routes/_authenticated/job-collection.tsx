@@ -502,15 +502,19 @@ function JobCollectionPage() {
               />
             </div>
             <button
+              type="button"
               onClick={() => setLive((v) => !v)}
-              className={`inline-flex items-center gap-2 text-xs px-3 py-2 rounded-lg border transition-base ${
+              aria-pressed={live}
+              aria-label={live ? "Realtime updates on — click to pause" : "Realtime updates paused — click to resume"}
+              className={`inline-flex items-center gap-2 text-xs px-3 py-2 rounded-lg border transition-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                 live ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10" : "border-border text-muted-foreground"
               }`}
               title="Toggle realtime updates"
             >
-              <Radio className={`h-3.5 w-3.5 ${live ? "animate-pulse" : ""}`} />
+              <Radio aria-hidden="true" className={`h-3.5 w-3.5 ${live ? "animate-pulse" : ""}`} />
               {live ? "Live" : "Paused"}
             </button>
+
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
@@ -537,30 +541,50 @@ function JobCollectionPage() {
         {/* Table */}
         <div className="rounded-xl border border-border/60 bg-card overflow-hidden">
           <div className="overflow-x-auto">
-            <Table>
+            <Table aria-label="Collected jobs" aria-rowcount={total}>
+              <caption className="sr-only">
+                Collected jobs. Use Tab to move between rows and column headers; press Enter or Space on a header to sort, or on a row to view details.
+              </caption>
               <TableHeader>
                 <TableRow className="bg-muted/40">
-                  <SortHead label="Job Title" k="job_title" sortKey={params.sort} icon={sortIcon} onClick={toggleSort} />
-                  <SortHead label="Company" k="company_name" sortKey={params.sort} icon={sortIcon} onClick={toggleSort} />
-                  <SortHead label="Location" k="location" sortKey={params.sort} icon={sortIcon} onClick={toggleSort} />
-                  <TableHead>Skills</TableHead>
-                  <SortHead label="Source" k="source" sortKey={params.sort} icon={sortIcon} onClick={toggleSort} />
-                  <SortHead label="Posted" k="posted_date" sortKey={params.sort} icon={sortIcon} onClick={toggleSort} />
-                  <SortHead label="Status" k="status" sortKey={params.sort} icon={sortIcon} onClick={toggleSort} />
-                  <TableHead className="text-right">Actions</TableHead>
+                  <SortHead label="Job Title" k="job_title" sortKey={params.sort} dir={params.dir} icon={sortIcon} onClick={toggleSort} />
+                  <SortHead label="Company" k="company_name" sortKey={params.sort} dir={params.dir} icon={sortIcon} onClick={toggleSort} />
+                  <SortHead label="Location" k="location" sortKey={params.sort} dir={params.dir} icon={sortIcon} onClick={toggleSort} />
+                  <TableHead scope="col">Skills</TableHead>
+                  <SortHead label="Source" k="source" sortKey={params.sort} dir={params.dir} icon={sortIcon} onClick={toggleSort} />
+                  <SortHead label="Posted" k="posted_date" sortKey={params.sort} dir={params.dir} icon={sortIcon} onClick={toggleSort} />
+                  <SortHead label="Status" k="status" sortKey={params.sort} dir={params.dir} icon={sortIcon} onClick={toggleSort} />
+                  <TableHead scope="col" className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
+              <TableBody aria-busy={isLoading || isFetching}>
                 {isLoading && (
                   <TableRow><TableCell colSpan={8} className="text-center py-10 text-muted-foreground">Loading…</TableCell></TableRow>
                 )}
                 {!isLoading && jobs.length === 0 && (
-                  <TableRow><TableCell colSpan={8} className="text-center py-10 text-muted-foreground">
-                    No jobs match the current filters.
-                  </TableCell></TableRow>
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-10 text-muted-foreground">
+                      No jobs match the current filters.
+                    </TableCell>
+                  </TableRow>
                 )}
+
                 {jobs.map((j) => (
-                  <TableRow key={j.id} className="cursor-pointer hover:bg-muted/30 transition-base" onClick={() => setSelected(j)}>
+                  <TableRow
+                    key={j.id}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`View details for ${j.job_title} at ${j.company_name}`}
+                    className="cursor-pointer hover:bg-muted/30 transition-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                    onClick={() => setSelected(j)}
+                    onKeyDown={(e) => {
+                      if (e.target !== e.currentTarget) return;
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setSelected(j);
+                      }
+                    }}
+                  >
                     <TableCell className="font-medium max-w-[280px] truncate">{j.job_title}</TableCell>
                     <TableCell className="text-muted-foreground">{j.company_name}</TableCell>
                     <TableCell className="text-muted-foreground">{j.location ?? "—"}</TableCell>
@@ -581,12 +605,18 @@ function JobCollectionPage() {
                     <TableCell>
                       <Badge className={`border ${statusVariants[j.status]}`} variant="outline">{j.status}</Badge>
                     </TableCell>
-                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                    <TableCell
+                      className="text-right"
+                      onClick={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => e.stopPropagation()}
+                    >
                       <Select
                         value={j.status}
                         onValueChange={(v) => updateStatus.mutate({ id: j.id, status: v as CollectedJob["status"] })}
                       >
-                        <SelectTrigger className="h-8 w-[130px] ml-auto"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="h-8 w-[130px] ml-auto" aria-label={`Change status for ${j.job_title}`}>
+                          <SelectValue />
+                        </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="new">Mark as New</SelectItem>
                           <SelectItem value="processed">Mark as Processed</SelectItem>
@@ -601,8 +631,11 @@ function JobCollectionPage() {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between px-4 py-3 border-t border-border/60 text-sm">
-            <div className="text-muted-foreground">
+          <nav
+            aria-label="Job collection pagination"
+            className="flex items-center justify-between px-4 py-3 border-t border-border/60 text-sm"
+          >
+            <div className="text-muted-foreground" aria-live="polite" aria-atomic="true">
               {total === 0
                 ? "0 results"
                 : `Showing ${(params.page - 1) * PAGE_SIZE + 1}–${Math.min(params.page * PAGE_SIZE, total)} of ${total}`}
@@ -612,25 +645,30 @@ function JobCollectionPage() {
               <Button
                 variant="outline"
                 size="sm"
+                aria-label={`Go to previous page${params.page > 1 ? `, page ${params.page - 1}` : ""}`}
                 disabled={params.page <= 1}
                 onClick={() => setParam("page", params.page - 1)}
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+                <span className="sr-only">Previous</span>
               </Button>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-muted-foreground" aria-current="page">
                 Page {params.page} of {pageCount}
               </span>
               <Button
                 variant="outline"
                 size="sm"
+                aria-label={`Go to next page${params.page < pageCount ? `, page ${params.page + 1}` : ""}`}
                 disabled={params.page >= pageCount}
                 onClick={() => setParam("page", params.page + 1)}
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight aria-hidden="true" className="h-4 w-4" />
+                <span className="sr-only">Next</span>
               </Button>
             </div>
-          </div>
+          </nav>
         </div>
+
       </div>
 
       {/* Detail dialog */}
@@ -692,28 +730,37 @@ function JobCollectionPage() {
 }
 
 function SortHead({
-  label, k, sortKey, icon, onClick,
+  label, k, sortKey, dir, icon, onClick,
 }: {
   label: string;
   k: SortKey;
   sortKey: SortKey;
+  dir: "asc" | "desc";
   icon: (k: SortKey) => React.ReactNode;
   onClick: (k: SortKey) => void;
 }) {
+  const isActive = sortKey === k;
+  const ariaSort: "ascending" | "descending" | "none" = isActive
+    ? (dir === "asc" ? "ascending" : "descending")
+    : "none";
+  const nextDir = isActive && dir === "asc" ? "descending" : "ascending";
   return (
-    <TableHead>
+    <TableHead scope="col" aria-sort={ariaSort}>
       <button
+        type="button"
         onClick={() => onClick(k)}
-        className={`inline-flex items-center gap-1.5 hover:text-foreground transition-base ${
-          sortKey === k ? "text-foreground font-medium" : ""
+        aria-label={`Sort by ${label}, ${isActive ? `currently ${ariaSort}` : "not sorted"}. Activate to sort ${nextDir}.`}
+        className={`inline-flex items-center gap-1.5 rounded-sm px-1 -mx-1 hover:text-foreground transition-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+          isActive ? "text-foreground font-medium" : ""
         }`}
       >
         {label}
-        {icon(k)}
+        <span aria-hidden="true">{icon(k)}</span>
       </button>
     </TableHead>
   );
 }
+
 
 function FilterSelect({
   value, onChange, label, options,
