@@ -110,15 +110,14 @@ export const Route = createFileRoute("/api/public/n8n/candidates")({
       POST: async ({ request }) => {
         const auth = verifyN8nRequest(request);
         if (auth) return auth;
-        let body: unknown;
-        try {
-          body = await request.json();
-        } catch {
-          return jsonResponse({ error: "Invalid JSON" }, 400);
-        }
-        const payload = z.union([CandidateSchema, z.array(CandidateSchema).max(100)]).safeParse(body);
+        const body = await readJsonBody(request);
+        if (!body.ok) return body.response;
+        const payload = CandidatePayloadSchema.safeParse(body.value);
         if (!payload.success) {
-          return jsonResponse({ error: "Validation failed", issues: payload.error.issues }, 422);
+          return jsonResponse(
+            { error: "Validation failed", issues: payload.error.issues },
+            422,
+          );
         }
         const rows = Array.isArray(payload.data) ? payload.data : [payload.data];
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -133,15 +132,14 @@ export const Route = createFileRoute("/api/public/n8n/candidates")({
       PATCH: async ({ request }) => {
         const auth = verifyN8nRequest(request);
         if (auth) return auth;
-        let body: unknown;
-        try {
-          body = await request.json();
-        } catch {
-          return jsonResponse({ error: "Invalid JSON" }, 400);
-        }
-        const parsed = UpdateSchema.safeParse(body);
+        const body = await readJsonBody(request);
+        if (!body.ok) return body.response;
+        const parsed = UpdateSchema.safeParse(body.value);
         if (!parsed.success) {
-          return jsonResponse({ error: "Validation failed", issues: parsed.error.issues }, 422);
+          return jsonResponse(
+            { error: "Validation failed", issues: parsed.error.issues },
+            422,
+          );
         }
         const { id, ...updates } = parsed.data;
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -150,8 +148,9 @@ export const Route = createFileRoute("/api/public/n8n/candidates")({
           .update(updates)
           .eq("id", id)
           .select("id, status, notes")
-          .single();
-        if (error) return jsonResponse({ error: error.message }, 404);
+          .maybeSingle();
+        if (error) return jsonResponse({ error: error.message }, 500);
+        if (!data) return jsonResponse({ error: "Candidate not found" }, 404);
         return jsonResponse({ candidate: data });
       },
     },
