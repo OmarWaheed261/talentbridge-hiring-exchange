@@ -1,8 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
   Briefcase, Users, CheckCircle2, Calendar, Award, FolderOpen,
-  ArrowUpRight,
+  ArrowUpRight, Radio,
 } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -12,7 +14,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
 import { StatCard } from "@/components/StatCard";
 import { Button } from "@/components/ui/button";
-import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -87,6 +88,58 @@ function Dashboard() {
     },
   });
 
+  const queryClient = useQueryClient();
+  const [isLive, setIsLive] = useState(false);
+
+  useEffect(() => {
+    const refresh = () => {
+      queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["recent-activity"] });
+    };
+
+    const channel = supabase
+      .channel("dashboard-realtime")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "jobs" },
+        (payload) => {
+          const row = payload.new as { job_title?: string; company_name?: string };
+          toast.success(`New job: ${row.job_title ?? "Untitled"}`, {
+            description: row.company_name ?? undefined,
+          });
+          refresh();
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "candidates" },
+        (payload) => {
+          const row = payload.new as { candidate_name?: string };
+          toast.success(`New candidate: ${row.candidate_name ?? "Unnamed"}`);
+          refresh();
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "candidates" },
+        (payload) => {
+          const oldRow = payload.old as { status?: string };
+          const newRow = payload.new as { candidate_name?: string; status?: string };
+          if (oldRow.status !== newRow.status) {
+            toast.message(`${newRow.candidate_name ?? "Candidate"} → ${newRow.status ?? ""}`);
+            refresh();
+          }
+        },
+      )
+      .subscribe((status) => {
+        setIsLive(status === "SUBSCRIBED");
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   return (
     <>
       <PageHeader
@@ -94,11 +147,22 @@ function Dashboard() {
 
         description="Here's what's happening across your recruitment pipeline."
         actions={
-          <Link to="/jobs">
-            <Button className="bg-gradient-primary text-primary-foreground shadow-glow">
-              View jobs <ArrowUpRight className="ml-1 h-4 w-4" />
-            </Button>
-          </Link>
+          <div className="flex items-center gap-3">
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+                isLive ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"
+              }`}
+              title={isLive ? "Realtime connected" : "Connecting…"}
+            >
+              <Radio className={`h-3 w-3 ${isLive ? "animate-pulse" : ""}`} />
+              {isLive ? "Live" : "Offline"}
+            </span>
+            <Link to="/jobs">
+              <Button className="bg-gradient-primary text-primary-foreground shadow-glow">
+                View jobs <ArrowUpRight className="ml-1 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
         }
       />
 
