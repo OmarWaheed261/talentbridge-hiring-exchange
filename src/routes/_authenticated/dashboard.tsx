@@ -1,8 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
   Briefcase, Users, CheckCircle2, Calendar, Award, FolderOpen,
-  ArrowUpRight,
+  ArrowUpRight, Radio,
 } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -12,7 +14,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
 import { StatCard } from "@/components/StatCard";
 import { Button } from "@/components/ui/button";
-import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
