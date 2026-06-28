@@ -283,24 +283,109 @@ function JobCollectionPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const exportCsv = () => {
-    const header = ["job_title","company_name","location","skills","source","job_url","posted_date","status","created_at"];
-    const lines = [header.join(",")];
-    for (const j of jobs) {
-      const row = [
-        j.job_title, j.company_name, j.location ?? "", (j.skills ?? []).join("|"),
-        j.source ?? "", j.job_url ?? "", j.posted_date ?? "", j.status, j.created_at,
-      ].map((v) => `"${String(v).replace(/"/g, '""')}"`);
-      lines.push(row.join(","));
+  const fetchAllFiltered = async (): Promise<CollectedJob[]> => {
+    const rows: CollectedJob[] = [];
+    const CHUNK = 1000;
+    let from = 0;
+    // Cap to avoid pulling unbounded datasets in the browser
+    const HARD_CAP = 10_000;
+    while (from < HARD_CAP) {
+      let q = supabase.from("collected_jobs").select("*");
+      if (params.status !== "all") q = q.eq("status", params.status);
+      if (params.source !== "all") q = q.eq("source", params.source);
+      if (params.company !== "all") q = q.eq("company_name", params.company);
+      if (params.location !== "all") q = q.eq("location", params.location);
+      if (params.skill !== "all") q = q.contains("skills", [params.skill]);
+      if (params.q.trim()) {
+        const term = params.q.trim().replace(/[%,]/g, "");
+        q = q.or(`job_title.ilike.%${term}%,company_name.ilike.%${term}%,location.ilike.%${term}%`);
+      }
+      q = q.order(params.sort, { ascending: params.dir === "asc", nullsFirst: false });
+      if (params.sort !== "created_at") q = q.order("created_at", { ascending: false });
+      q = q.range(from, from + CHUNK - 1);
+      const { data, error } = await q;
+      if (error) throw error;
+      const batch = (data ?? []) as CollectedJob[];
+      rows.push(...batch);
+      if (batch.length < CHUNK) break;
+      from += CHUNK;
     }
-    const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+    return rows;
+  };
+
+  const buildExportRows = (data: CollectedJob[]) =>
+    data.map((j) => ({
+      job_title: j.job_title,
+      company_name: j.company_name,
+      location: j.location ?? "",
+      skills: (j.skills ?? []).join("|"),
+      source: j.source ?? "",
+      job_url: j.job_url ?? "",
+      posted_date: j.posted_date ?? "",
+      status: j.status,
+      created_at: j.created_at,
+    }));
+
+  const triggerDownload = (blob: Blob, filename: string) => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `collected-jobs-${new Date().toISOString().slice(0,10)}.csv`;
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
   };
+
+  const exportCsv = (rows: CollectedJob[], suffix: string) => {
+    const exportRows = buildExportRows(rows);
+    const header = Object.keys(exportRows[0] ?? {
+      job_title: "", company_name: "", location: "", skills: "", source: "",
+      job_url: "", posted_date: "", status: "", created_at: "",
+    });
+    const lines = [header.join(",")];
+    for (const r of exportRows) {
+      const row = header.map((k) => `"${String((r as Record<string, unknown>)[k] ?? "").replace(/"/g, '""')}"`);
+      lines.push(row.join(","));
+    }
+    // BOM so Excel opens UTF-8 cleanly
+    const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+    triggerDownload(blob, `collected-jobs-${suffix}-${new Date().toISOString().slice(0, 10)}.csv`);
+  };
+
+  const exportXlsx = (rows: CollectedJob[], suffix: string) => {
+    const exportRows = buildExportRows(rows);
+    const ws = XLSX.utils.json_to_sheet(exportRows);
+    ws["!cols"] = [
+      { wch: 36 }, { wch: 26 }, { wch: 22 }, { wch: 30 }, { wch: 14 },
+      { wch: 50 }, { wch: 20 }, { wch: 12 }, { wch: 20 },
+    ];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Collected Jobs");
+    const buf = XLSX.write(wb, { bookType: "xlsx", type: "array" }) as ArrayBuffer;
+    const blob = new Blob([buf], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    triggerDownload(blob, `collected-jobs-${suffix}-${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
+
+  const [exporting, setExporting] = useState(false);
+  const handleExport = async (format: "csv" | "xlsx", scope: "page" | "all") => {
+    try {
+      setExporting(true);
+      const rows = scope === "page" ? jobs : await fetchAllFiltered();
+      if (rows.length === 0) {
+        toast.message("Nothing to export with the current filters.");
+        return;
+      }
+      if (format === "csv") exportCsv(rows, scope);
+      else exportXlsx(rows, scope);
+      toast.success(`Exported ${rows.length} job${rows.length === 1 ? "" : "s"} (${format.toUpperCase()})`);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setExporting(false);
+    }
+  };
+
 
   const triggerSync = async () => {
     toast.info("Triggering manual sync…");
