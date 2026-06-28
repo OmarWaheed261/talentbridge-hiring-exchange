@@ -219,13 +219,26 @@ function CandidatesPage() {
     return params.dir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />;
   };
 
-  const SortableTh = ({ k, label }: { k: SortKey; label: string }) => (
-    <th className="p-3 font-semibold">
-      <button onClick={() => toggleSort(k)} className="inline-flex items-center gap-1.5 hover:text-foreground transition-base">
-        {label} {sortIcon(k)}
-      </button>
-    </th>
-  );
+  const SortableTh = ({ k, label }: { k: SortKey; label: string }) => {
+    const active = params.sort === k;
+    const ariaSort: "ascending" | "descending" | "none" = active
+      ? params.dir === "asc" ? "ascending" : "descending"
+      : "none";
+    return (
+      <th scope="col" aria-sort={ariaSort} className="p-3 font-semibold">
+        <button
+          type="button"
+          onClick={() => toggleSort(k)}
+          aria-label={`Sort by ${label}${
+            active ? ` (currently ${ariaSort}, click to ${params.dir === "asc" ? "sort descending" : "sort ascending"})` : ", not sorted"
+          }`}
+          className="inline-flex items-center gap-1.5 hover:text-foreground transition-base rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background px-1 -mx-1"
+        >
+          {label} {sortIcon(k)}
+        </button>
+      </th>
+    );
+  };
 
   return (
     <>
