@@ -73,6 +73,7 @@ function CandidatesPage() {
     mutationFn: async ({ id, status }: { id: string; status: Status }) => {
       const { error } = await supabase.from("candidates").update({ status }).eq("id", id);
       if (error) throw error;
+      void dispatchN8nEvent({ data: { event: "candidate.status_changed", payload: { id, status } } });
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["candidates"] }); },
     onError: (e: Error) => toast.error(e.message),
