@@ -116,7 +116,7 @@ function Dashboard() {
           <div className="lg:col-span-2 glass rounded-2xl p-6 shadow-card">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-semibold">Monthly Candidate Submissions</h3>
+                <h2 className="font-semibold">Monthly Candidate Submissions</h2>
                 <p className="text-xs text-muted-foreground">Pipeline volume over the last 6 months</p>
               </div>
             </div>
@@ -143,7 +143,7 @@ function Dashboard() {
           </div>
 
           <div className="glass rounded-2xl p-6 shadow-card">
-            <h3 className="font-semibold mb-1">Job Categories</h3>
+            <h2 className="font-semibold mb-1">Job Categories</h2>
             <p className="text-xs text-muted-foreground mb-4">Distribution by domain</p>
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
@@ -169,7 +169,7 @@ function Dashboard() {
 
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 glass rounded-2xl p-6 shadow-card">
-            <h3 className="font-semibold mb-4">Hiring Funnel</h3>
+            <h2 className="font-semibold mb-4">Hiring Funnel</h2>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={funnel} layout="vertical" margin={{ left: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
@@ -182,7 +182,7 @@ function Dashboard() {
           </div>
 
           <div className="glass rounded-2xl p-6 shadow-card">
-            <h3 className="font-semibold mb-4">Recent Activity</h3>
+            <h2 className="font-semibold mb-4">Recent Activity</h2>
             <div className="space-y-3">
               {(recent?.jobs ?? []).map((j) => (
                 <div key={j.id} className="flex items-start gap-3 text-sm">
