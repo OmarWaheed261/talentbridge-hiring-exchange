@@ -32,7 +32,7 @@ export const queueExport = createServerFn({ method: "POST" })
         consultancy_id: profile.consultancy_id,
         page_key: data.page_key,
         format: data.format,
-        filters: data.filters,
+        filters: data.filters as never,
         status: "queued",
       })
       .select("id, status, format, page_key, created_at")
