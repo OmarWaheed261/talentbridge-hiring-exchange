@@ -583,6 +583,14 @@ function JobCollectionPage() {
                   <FileSpreadsheet className="h-4 w-4 mr-2" /> Excel (.xlsx)
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
+                <DropdownMenuLabel>Queue in n8n (large datasets)</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => handleQueueExport("csv")} disabled={queuing}>
+                  <CloudUpload className="h-4 w-4 mr-2" /> Queue CSV export
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleQueueExport("xlsx")} disabled={queuing}>
+                  <CloudUpload className="h-4 w-4 mr-2" /> Queue Excel export
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setHistoryOpen(true)}>
                   <History className="h-4 w-4 mr-2" /> Export history…
                 </DropdownMenuItem>
