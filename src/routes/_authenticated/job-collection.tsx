@@ -458,9 +458,13 @@ function JobCollectionPage() {
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" disabled={exporting}>
+                <Button variant="outline" size="sm" disabled={exporting} aria-live="polite">
                   <Download className={`h-4 w-4 mr-2 ${exporting ? "animate-pulse" : ""}`} />
-                  {exporting ? "Exporting…" : "Export"}
+                  {exporting
+                    ? exportProgress && exportProgress.total > 0
+                      ? `Exporting ${Math.min(100, Math.round((exportProgress.loaded / exportProgress.total) * 100))}%`
+                      : "Exporting…"
+                    : "Export"}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
