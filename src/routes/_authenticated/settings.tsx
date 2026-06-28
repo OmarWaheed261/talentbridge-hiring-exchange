@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { User as UserIcon, Bell, Shield, Building2 } from "lucide-react";
+import { User as UserIcon, Bell, Shield, Building2, Plug } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/auth";
+import { N8nIntegrationCard } from "@/components/N8nIntegrationCard";
+
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
@@ -45,9 +47,11 @@ function SettingsPage() {
           <TabsList>
             <TabsTrigger value="profile"><UserIcon className="h-4 w-4 mr-1.5" /> Profile</TabsTrigger>
             <TabsTrigger value="company"><Building2 className="h-4 w-4 mr-1.5" /> Company</TabsTrigger>
+            <TabsTrigger value="integrations"><Plug className="h-4 w-4 mr-1.5" /> Integrations</TabsTrigger>
             <TabsTrigger value="notifications"><Bell className="h-4 w-4 mr-1.5" /> Notifications</TabsTrigger>
             <TabsTrigger value="roles"><Shield className="h-4 w-4 mr-1.5" /> Roles</TabsTrigger>
           </TabsList>
+
 
           <TabsContent value="profile" className="mt-6">
             <div className="glass rounded-2xl p-6 shadow-card space-y-4">
@@ -64,6 +68,11 @@ function SettingsPage() {
               <p className="text-sm text-muted-foreground">Company settings will appear here once you join or create a consultancy. Super admins can manage all companies under Consultancies.</p>
             </div>
           </TabsContent>
+
+          <TabsContent value="integrations" className="mt-6">
+            <N8nIntegrationCard />
+          </TabsContent>
+
 
           <TabsContent value="notifications" className="mt-6">
             <div className="glass rounded-2xl p-6 shadow-card space-y-4">
