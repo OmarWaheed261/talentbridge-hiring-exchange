@@ -6,6 +6,7 @@ import ingestCandidate from "../../../../../n8n-templates/ingest-candidate-submi
 import updateCandidate from "../../../../../n8n-templates/update-candidate-status.json";
 import syncJobStatusChanges from "../../../../../n8n-templates/sync-job-status-changes.json";
 import apifyIngestCollectedJobs from "../../../../../n8n-templates/apify-ingest-collected-jobs.json";
+import exportJobRunner from "../../../../../n8n-templates/export-job-runner.json";
 
 const templates: Record<string, unknown> = {
   "sync-open-jobs": syncOpenJobs,
@@ -14,6 +15,7 @@ const templates: Record<string, unknown> = {
   "update-candidate-status": updateCandidate,
   "sync-job-status-changes": syncJobStatusChanges,
   "apify-ingest-collected-jobs": apifyIngestCollectedJobs,
+  "export-job-runner": exportJobRunner,
 };
 
 export const Route = createFileRoute("/api/public/n8n/templates/$templateName")({
