@@ -9,6 +9,15 @@ import { Label } from "@/components/ui/label";
 export const Route = createFileRoute("/forgot-password")({
   ssr: false,
   component: ForgotPasswordPage,
+  head: () => ({
+    meta: [
+      { title: "Forgot Password — TalentBridge AI" },
+      { name: "description", content: "Request a password reset link for your TalentBridge AI recruitment workspace." },
+      { name: "robots", content: "noindex, follow" },
+      { property: "og:url", content: "https://talentbridge-pro-hub.lovable.app/forgot-password" },
+    ],
+    links: [{ rel: "canonical", href: "https://talentbridge-pro-hub.lovable.app/forgot-password" }],
+  }),
 });
 
 function ForgotPasswordPage() {

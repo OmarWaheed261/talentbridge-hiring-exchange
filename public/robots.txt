@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /jobs
+Disallow: /candidates
+Disallow: /consultancies
+Disallow: /reports
+Disallow: /notifications
+Disallow: /settings
+Disallow: /automation
+Disallow: /api/
+
+Sitemap: https://talentbridge-pro-hub.lovable.app/sitemap.xml

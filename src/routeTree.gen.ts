@@ -9,11 +9,13 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GuidesAutomationRouteImport } from './routes/guides/automation'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
@@ -30,6 +32,11 @@ import { Route as ApiPublicN8nHealthRouteImport } from './routes/api/public/n8n/
 import { Route as ApiPublicN8nCandidatesRouteImport } from './routes/api/public/n8n/candidates'
 import { Route as ApiPublicN8nTemplatesTemplateNameRouteImport } from './routes/api/public/n8n/templates.$templateName'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -52,6 +59,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuidesAutomationRoute = GuidesAutomationRouteImport.update({
+  id: '/guides/automation',
+  path: '/guides/automation',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -139,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/automation': typeof AuthenticatedAutomationRoute
   '/candidates': typeof AuthenticatedCandidatesRoute
   '/consultancies': typeof AuthenticatedConsultanciesRoute
@@ -147,6 +160,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/guides/automation': typeof GuidesAutomationRoute
   '/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
   '/api/public/n8n/candidates': typeof ApiPublicN8nCandidatesRoute
   '/api/public/n8n/health': typeof ApiPublicN8nHealthRoute
@@ -160,6 +174,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/automation': typeof AuthenticatedAutomationRoute
   '/candidates': typeof AuthenticatedCandidatesRoute
   '/consultancies': typeof AuthenticatedConsultanciesRoute
@@ -168,6 +183,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/guides/automation': typeof GuidesAutomationRoute
   '/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
   '/api/public/n8n/candidates': typeof ApiPublicN8nCandidatesRoute
   '/api/public/n8n/health': typeof ApiPublicN8nHealthRoute
@@ -183,6 +199,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/automation': typeof AuthenticatedAutomationRoute
   '/_authenticated/candidates': typeof AuthenticatedCandidatesRoute
   '/_authenticated/consultancies': typeof AuthenticatedConsultanciesRoute
@@ -191,6 +208,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/guides/automation': typeof GuidesAutomationRoute
   '/_authenticated/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
   '/api/public/n8n/candidates': typeof ApiPublicN8nCandidatesRoute
   '/api/public/n8n/health': typeof ApiPublicN8nHealthRoute
@@ -206,6 +224,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/forgot-password'
     | '/reset-password'
+    | '/sitemap.xml'
     | '/automation'
     | '/candidates'
     | '/consultancies'
@@ -214,6 +233,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/reports'
     | '/settings'
+    | '/guides/automation'
     | '/jobs/$jobId'
     | '/api/public/n8n/candidates'
     | '/api/public/n8n/health'
@@ -227,6 +247,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/forgot-password'
     | '/reset-password'
+    | '/sitemap.xml'
     | '/automation'
     | '/candidates'
     | '/consultancies'
@@ -235,6 +256,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/reports'
     | '/settings'
+    | '/guides/automation'
     | '/jobs/$jobId'
     | '/api/public/n8n/candidates'
     | '/api/public/n8n/health'
@@ -249,6 +271,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/forgot-password'
     | '/reset-password'
+    | '/sitemap.xml'
     | '/_authenticated/automation'
     | '/_authenticated/candidates'
     | '/_authenticated/consultancies'
@@ -257,6 +280,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/reports'
     | '/_authenticated/settings'
+    | '/guides/automation'
     | '/_authenticated/jobs/$jobId'
     | '/api/public/n8n/candidates'
     | '/api/public/n8n/health'
@@ -272,6 +296,8 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  GuidesAutomationRoute: typeof GuidesAutomationRoute
   ApiPublicN8nCandidatesRoute: typeof ApiPublicN8nCandidatesRoute
   ApiPublicN8nHealthRoute: typeof ApiPublicN8nHealthRoute
   ApiPublicN8nJobStatusEventsRoute: typeof ApiPublicN8nJobStatusEventsRoute
@@ -282,6 +308,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -315,6 +348,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guides/automation': {
+      id: '/guides/automation'
+      path: '/guides/automation'
+      fullPath: '/guides/automation'
+      preLoaderRoute: typeof GuidesAutomationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/settings': {
@@ -467,6 +507,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
+  GuidesAutomationRoute: GuidesAutomationRoute,
   ApiPublicN8nCandidatesRoute: ApiPublicN8nCandidatesRoute,
   ApiPublicN8nHealthRoute: ApiPublicN8nHealthRoute,
   ApiPublicN8nJobStatusEventsRoute: ApiPublicN8nJobStatusEventsRoute,
