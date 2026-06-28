@@ -1,0 +1,103 @@
+{
+  "name": "Apify → TalentBridge Collected Jobs",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "apify-jobs",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-apify",
+      "name": "Apify Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 300],
+      "webhookId": "apify-jobs"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.apify.com/v2/actor-runs/{{$json.body.resource.id}}/dataset/items?clean=true&format=json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": { "response": { "response": { "fullResponse": false } } }
+      },
+      "id": "fetch-dataset",
+      "name": "Fetch Apify Dataset",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300],
+      "credentials": {
+        "httpHeaderAuth": { "id": "APIFY_TOKEN", "name": "Apify Bearer" }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {}
+      },
+      "id": "split-items",
+      "name": "Split Items",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [720, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize Apify scraper output → TalentBridge collected_jobs schema.\n// Supports common shapes from Indeed / LinkedIn / generic career-page actors.\nconst items = $input.all();\nconst pick = (o, ...keys) => keys.map(k => o?.[k]).find(v => v !== undefined && v !== null && v !== '');\nconst toIso = (v) => { if (!v) return null; const d = new Date(v); return isNaN(d.getTime()) ? null : d.toISOString(); };\nconst normSkills = (v) => {\n  if (Array.isArray(v)) return v.map(String).map(s => s.trim()).filter(Boolean).slice(0, 60);\n  if (typeof v === 'string') return v.split(/[,;|]/).map(s => s.trim()).filter(Boolean).slice(0, 60);\n  return [];\n};\nconst sourceFromUrl = (u) => {\n  if (!u) return 'apify';\n  try { const h = new URL(u).hostname.replace('www.', ''); return h.split('.')[0]; } catch { return 'apify'; }\n};\n\nconst mapped = items.map(({ json }) => {\n  const url = pick(json, 'url', 'jobUrl', 'job_url', 'link', 'externalUrl');\n  return {\n    job_title: pick(json, 'title', 'jobTitle', 'positionName', 'job_title') || 'Untitled',\n    company_name: pick(json, 'company', 'companyName', 'employer', 'company_name') || 'Unknown',\n    location: pick(json, 'location', 'jobLocation', 'place', 'city') || null,\n    skills: normSkills(pick(json, 'skills', 'requiredSkills', 'tags', 'keywords')),\n    job_url: url || null,\n    source: pick(json, 'source', 'site') || sourceFromUrl(url),\n    description: pick(json, 'description', 'descriptionText', 'jobDescription', 'snippet') || null,\n    posted_date: toIso(pick(json, 'postedAt', 'datePosted', 'posted_date', 'publishedAt', 'date')),\n    raw_payload: json,\n  };\n}).filter(r => r.job_title && r.company_name);\n\nreturn [{ json: { jobs: mapped, count: mapped.length } }];"
+      },
+      "id": "transform",
+      "name": "Transform → collected_jobs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [980, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://talentbridge-pro-hub.lovable.app/api/public/n8n/collected-jobs",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-n8n-secret", "value": "={{$env.N8N_WEBHOOK_SECRET}}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.jobs) }}",
+        "options": {
+          "response": { "response": { "fullResponse": false } },
+          "timeout": 30000
+        }
+      },
+      "id": "post-talentbridge",
+      "name": "POST to TalentBridge (dedupes on job_url)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1240, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, received: $('Transform → collected_jobs').item.json.count, ingest: $json } }}"
+      },
+      "id": "respond",
+      "name": "Respond to Apify",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1500, 300]
+    }
+  ],
+  "connections": {
+    "Apify Webhook": { "main": [[{ "node": "Fetch Apify Dataset", "type": "main", "index": 0 }]] },
+    "Fetch Apify Dataset": { "main": [[{ "node": "Split Items", "type": "main", "index": 0 }]] },
+    "Split Items": { "main": [[{ "node": "Transform → collected_jobs", "type": "main", "index": 0 }]] },
+    "Transform → collected_jobs": { "main": [[{ "node": "POST to TalentBridge (dedupes on job_url)", "type": "main", "index": 0 }]] },
+    "POST to TalentBridge (dedupes on job_url)": { "main": [[{ "node": "Respond to Apify", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": {
+    "description": "Receives an Apify actor-run webhook, pulls the dataset, normalizes job items, and POSTs them to TalentBridge. The TalentBridge endpoint upserts on job_url (unique index), so re-runs never create duplicates."
+  }
+}
