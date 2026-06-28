@@ -8,6 +8,7 @@ const EventSchema = z.object({
     "candidate.status_changed",
     "job.created",
     "job.status_changed",
+    "export.requested",
   ]),
   payload: z.record(z.string(), z.unknown()),
 });
