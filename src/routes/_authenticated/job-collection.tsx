@@ -730,28 +730,37 @@ function JobCollectionPage() {
 }
 
 function SortHead({
-  label, k, sortKey, icon, onClick,
+  label, k, sortKey, dir, icon, onClick,
 }: {
   label: string;
   k: SortKey;
   sortKey: SortKey;
+  dir: "asc" | "desc";
   icon: (k: SortKey) => React.ReactNode;
   onClick: (k: SortKey) => void;
 }) {
+  const isActive = sortKey === k;
+  const ariaSort: "ascending" | "descending" | "none" = isActive
+    ? (dir === "asc" ? "ascending" : "descending")
+    : "none";
+  const nextDir = isActive && dir === "asc" ? "descending" : "ascending";
   return (
-    <TableHead>
+    <TableHead scope="col" aria-sort={ariaSort}>
       <button
+        type="button"
         onClick={() => onClick(k)}
-        className={`inline-flex items-center gap-1.5 hover:text-foreground transition-base ${
-          sortKey === k ? "text-foreground font-medium" : ""
+        aria-label={`Sort by ${label}, ${isActive ? `currently ${ariaSort}` : "not sorted"}. Activate to sort ${nextDir}.`}
+        className={`inline-flex items-center gap-1.5 rounded-sm px-1 -mx-1 hover:text-foreground transition-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+          isActive ? "text-foreground font-medium" : ""
         }`}
       >
         {label}
-        {icon(k)}
+        <span aria-hidden="true">{icon(k)}</span>
       </button>
     </TableHead>
   );
 }
+
 
 function FilterSelect({
   value, onChange, label, options,
