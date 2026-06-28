@@ -562,10 +562,13 @@ function JobCollectionPage() {
                   <TableRow><TableCell colSpan={8} className="text-center py-10 text-muted-foreground">Loading…</TableCell></TableRow>
                 )}
                 {!isLoading && jobs.length === 0 && (
-                  <TableRow><TableCell colSpan={8} className="text-center py-10 text-muted-foreground">
-                    No jobs match the current filters.
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-10 text-muted-foreground">
+                      No jobs match the current filters.
+                    </TableCell>
                   </TableRow>
                 )}
+
                 {jobs.map((j) => (
                   <TableRow
                     key={j.id}
