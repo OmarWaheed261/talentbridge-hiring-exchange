@@ -187,8 +187,8 @@ function JobDialog({ onClose }: { onClose: () => void }) {
         company_name: form.company_name,
         location: form.location || null,
         salary_range: form.salary_range || null,
-        employment_type: form.employment_type as Job["employment_type"],
-        experience_level: form.experience_level as Job["experience_level"],
+        employment_type: form.employment_type as "full_time" | "part_time" | "contract" | "contract_to_hire" | "internship",
+        experience_level: form.experience_level as "entry" | "mid" | "senior" | "lead" | "principal",
         job_description: form.job_description || null,
         required_skills: form.required_skills.split(",").map((s) => s.trim()).filter(Boolean),
       });
