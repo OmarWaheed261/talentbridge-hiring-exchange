@@ -25,6 +25,7 @@ import { Route as AuthenticatedAutomationRouteImport } from './routes/_authentic
 import { Route as AuthenticatedJobsJobIdRouteImport } from './routes/_authenticated/jobs.$jobId'
 import { Route as ApiPublicN8nNotifyRouteImport } from './routes/api/public/n8n/notify'
 import { Route as ApiPublicN8nJobsRouteImport } from './routes/api/public/n8n/jobs'
+import { Route as ApiPublicN8nJobStatusEventsRouteImport } from './routes/api/public/n8n/job-status-events'
 import { Route as ApiPublicN8nHealthRouteImport } from './routes/api/public/n8n/health'
 import { Route as ApiPublicN8nCandidatesRouteImport } from './routes/api/public/n8n/candidates'
 import { Route as ApiPublicN8nTemplatesTemplateNameRouteImport } from './routes/api/public/n8n/templates.$templateName'
@@ -110,6 +111,12 @@ const ApiPublicN8nJobsRoute = ApiPublicN8nJobsRouteImport.update({
   path: '/api/public/n8n/jobs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicN8nJobStatusEventsRoute =
+  ApiPublicN8nJobStatusEventsRouteImport.update({
+    id: '/api/public/n8n/job-status-events',
+    path: '/api/public/n8n/job-status-events',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicN8nHealthRoute = ApiPublicN8nHealthRouteImport.update({
   id: '/api/public/n8n/health',
   path: '/api/public/n8n/health',
@@ -143,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
   '/api/public/n8n/candidates': typeof ApiPublicN8nCandidatesRoute
   '/api/public/n8n/health': typeof ApiPublicN8nHealthRoute
+  '/api/public/n8n/job-status-events': typeof ApiPublicN8nJobStatusEventsRoute
   '/api/public/n8n/jobs': typeof ApiPublicN8nJobsRoute
   '/api/public/n8n/notify': typeof ApiPublicN8nNotifyRoute
   '/api/public/n8n/templates/$templateName': typeof ApiPublicN8nTemplatesTemplateNameRoute
@@ -163,6 +171,7 @@ export interface FileRoutesByTo {
   '/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
   '/api/public/n8n/candidates': typeof ApiPublicN8nCandidatesRoute
   '/api/public/n8n/health': typeof ApiPublicN8nHealthRoute
+  '/api/public/n8n/job-status-events': typeof ApiPublicN8nJobStatusEventsRoute
   '/api/public/n8n/jobs': typeof ApiPublicN8nJobsRoute
   '/api/public/n8n/notify': typeof ApiPublicN8nNotifyRoute
   '/api/public/n8n/templates/$templateName': typeof ApiPublicN8nTemplatesTemplateNameRoute
@@ -185,6 +194,7 @@ export interface FileRoutesById {
   '/_authenticated/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
   '/api/public/n8n/candidates': typeof ApiPublicN8nCandidatesRoute
   '/api/public/n8n/health': typeof ApiPublicN8nHealthRoute
+  '/api/public/n8n/job-status-events': typeof ApiPublicN8nJobStatusEventsRoute
   '/api/public/n8n/jobs': typeof ApiPublicN8nJobsRoute
   '/api/public/n8n/notify': typeof ApiPublicN8nNotifyRoute
   '/api/public/n8n/templates/$templateName': typeof ApiPublicN8nTemplatesTemplateNameRoute
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
     | '/jobs/$jobId'
     | '/api/public/n8n/candidates'
     | '/api/public/n8n/health'
+    | '/api/public/n8n/job-status-events'
     | '/api/public/n8n/jobs'
     | '/api/public/n8n/notify'
     | '/api/public/n8n/templates/$templateName'
@@ -227,6 +238,7 @@ export interface FileRouteTypes {
     | '/jobs/$jobId'
     | '/api/public/n8n/candidates'
     | '/api/public/n8n/health'
+    | '/api/public/n8n/job-status-events'
     | '/api/public/n8n/jobs'
     | '/api/public/n8n/notify'
     | '/api/public/n8n/templates/$templateName'
@@ -248,6 +260,7 @@ export interface FileRouteTypes {
     | '/_authenticated/jobs/$jobId'
     | '/api/public/n8n/candidates'
     | '/api/public/n8n/health'
+    | '/api/public/n8n/job-status-events'
     | '/api/public/n8n/jobs'
     | '/api/public/n8n/notify'
     | '/api/public/n8n/templates/$templateName'
@@ -261,6 +274,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiPublicN8nCandidatesRoute: typeof ApiPublicN8nCandidatesRoute
   ApiPublicN8nHealthRoute: typeof ApiPublicN8nHealthRoute
+  ApiPublicN8nJobStatusEventsRoute: typeof ApiPublicN8nJobStatusEventsRoute
   ApiPublicN8nJobsRoute: typeof ApiPublicN8nJobsRoute
   ApiPublicN8nNotifyRoute: typeof ApiPublicN8nNotifyRoute
   ApiPublicN8nTemplatesTemplateNameRoute: typeof ApiPublicN8nTemplatesTemplateNameRoute
@@ -380,6 +394,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicN8nJobsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/n8n/job-status-events': {
+      id: '/api/public/n8n/job-status-events'
+      path: '/api/public/n8n/job-status-events'
+      fullPath: '/api/public/n8n/job-status-events'
+      preLoaderRoute: typeof ApiPublicN8nJobStatusEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/n8n/health': {
       id: '/api/public/n8n/health'
       path: '/api/public/n8n/health'
@@ -448,6 +469,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   ApiPublicN8nCandidatesRoute: ApiPublicN8nCandidatesRoute,
   ApiPublicN8nHealthRoute: ApiPublicN8nHealthRoute,
+  ApiPublicN8nJobStatusEventsRoute: ApiPublicN8nJobStatusEventsRoute,
   ApiPublicN8nJobsRoute: ApiPublicN8nJobsRoute,
   ApiPublicN8nNotifyRoute: ApiPublicN8nNotifyRoute,
   ApiPublicN8nTemplatesTemplateNameRoute:
