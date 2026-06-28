@@ -284,7 +284,9 @@ function JobCollectionPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const fetchAllFiltered = async (): Promise<CollectedJob[]> => {
+  const fetchAllFiltered = async (
+    onProgress?: (loaded: number) => void,
+  ): Promise<CollectedJob[]> => {
     const rows: CollectedJob[] = [];
     const CHUNK = 1000;
     let from = 0;
@@ -308,6 +310,7 @@ function JobCollectionPage() {
       if (error) throw error;
       const batch = (data ?? []) as CollectedJob[];
       rows.push(...batch);
+      onProgress?.(rows.length);
       if (batch.length < CHUNK) break;
       from += CHUNK;
     }
@@ -369,21 +372,42 @@ function JobCollectionPage() {
   };
 
   const [exporting, setExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState<{ loaded: number; total: number } | null>(null);
   const handleExport = async (format: "csv" | "xlsx", scope: "page" | "all") => {
+    const toastId = `export-${format}-${scope}`;
+    const label = format.toUpperCase();
     try {
       setExporting(true);
-      const rows = scope === "page" ? jobs : await fetchAllFiltered();
+      setExportProgress({ loaded: 0, total: scope === "page" ? jobs.length : total });
+      toast.loading(`Preparing ${label} export…`, {
+        id: toastId,
+        description: scope === "page" ? `Current page (${jobs.length} rows)` : `All filtered (${total} rows)`,
+      });
+      const rows =
+        scope === "page"
+          ? jobs
+          : await fetchAllFiltered((loaded) => {
+              setExportProgress({ loaded, total });
+              toast.loading(`Fetching ${label}… ${loaded.toLocaleString()} / ${total.toLocaleString()}`, {
+                id: toastId,
+              });
+            });
       if (rows.length === 0) {
-        toast.message("Nothing to export with the current filters.");
+        toast.message("Nothing to export with the current filters.", { id: toastId });
         return;
       }
+      toast.loading(`Building ${label} file…`, { id: toastId });
       if (format === "csv") exportCsv(rows, scope);
       else exportXlsx(rows, scope);
-      toast.success(`Exported ${rows.length} job${rows.length === 1 ? "" : "s"} (${format.toUpperCase()})`);
+      toast.success(`${label} download started`, {
+        id: toastId,
+        description: `${rows.length.toLocaleString()} job${rows.length === 1 ? "" : "s"} exported`,
+      });
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error((e as Error).message, { id: toastId });
     } finally {
       setExporting(false);
+      setExportProgress(null);
     }
   };
 
@@ -434,9 +458,13 @@ function JobCollectionPage() {
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" disabled={exporting}>
+                <Button variant="outline" size="sm" disabled={exporting} aria-live="polite">
                   <Download className={`h-4 w-4 mr-2 ${exporting ? "animate-pulse" : ""}`} />
-                  {exporting ? "Exporting…" : "Export"}
+                  {exporting
+                    ? exportProgress && exportProgress.total > 0
+                      ? `Exporting ${Math.min(100, Math.round((exportProgress.loaded / exportProgress.total) * 100))}%`
+                      : "Exporting…"
+                    : "Export"}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
