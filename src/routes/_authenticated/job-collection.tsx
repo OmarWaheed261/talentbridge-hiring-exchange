@@ -134,7 +134,7 @@ function JobCollectionPage() {
       if (error) throw error;
       return { rows: (data ?? []) as CollectedJob[], total: count ?? 0 };
     },
-    placeholderData: (prev: typeof params) => prev,
+    placeholderData: (prev) => prev,
   });
 
   const jobs = result?.rows ?? [];
