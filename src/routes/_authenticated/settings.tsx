@@ -12,6 +12,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/_authenticated/settings")({
+  head: () => ({
+    meta: [
+      { title: "Workspace Settings — TalentBridge AI" },
+      { name: "description", content: "Manage your TalentBridge AI profile, notifications, security, and consultancy workspace settings." },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: SettingsPage,
 });
 

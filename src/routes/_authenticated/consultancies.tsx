@@ -18,6 +18,13 @@ import {
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/_authenticated/consultancies")({
+  head: () => ({
+    meta: [
+      { title: "Consultancies — TalentBridge AI" },
+      { name: "description", content: "Manage staffing consultancy partners, contacts, and submission history across your recruitment network." },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: ConsultanciesPage,
 });
 

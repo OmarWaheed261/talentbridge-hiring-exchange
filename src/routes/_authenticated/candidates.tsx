@@ -20,6 +20,13 @@ import {
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/_authenticated/candidates")({
+  head: () => ({
+    meta: [
+      { title: "Candidates — TalentBridge AI" },
+      { name: "description", content: "Manage candidate submissions, screening status, interviews, and offers across all open recruitment pipelines." },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: CandidatesPage,
 });
 

@@ -7,6 +7,13 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
+  head: () => ({
+    meta: [
+      { title: "Notifications — TalentBridge AI" },
+      { name: "description", content: "Real-time updates on new candidates, interview scheduling, and recruitment workflow events." },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: NotificationsPage,
 });
 

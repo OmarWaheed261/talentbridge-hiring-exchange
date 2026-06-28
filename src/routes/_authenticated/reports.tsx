@@ -5,6 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/_authenticated/reports")({
+  head: () => ({
+    meta: [
+      { title: "Reports & Analytics — TalentBridge AI" },
+      { name: "description", content: "Recruitment performance reports: hiring funnel, source effectiveness, time-to-hire, and consultancy leaderboards." },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: ReportsPage,
 });
 
