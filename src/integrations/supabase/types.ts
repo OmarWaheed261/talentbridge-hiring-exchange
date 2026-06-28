@@ -80,6 +80,54 @@ export type Database = {
           },
         ]
       }
+      collected_jobs: {
+        Row: {
+          company_name: string
+          created_at: string
+          description: string | null
+          id: string
+          job_title: string
+          job_url: string | null
+          location: string | null
+          posted_date: string | null
+          raw_payload: Json | null
+          skills: string[]
+          source: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          company_name: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          job_title: string
+          job_url?: string | null
+          location?: string | null
+          posted_date?: string | null
+          raw_payload?: Json | null
+          skills?: string[]
+          source?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          job_title?: string
+          job_url?: string | null
+          location?: string | null
+          posted_date?: string | null
+          raw_payload?: Json | null
+          skills?: string[]
+          source?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       consultancies: {
         Row: {
           company_name: string

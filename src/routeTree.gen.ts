@@ -20,6 +20,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
+import { Route as AuthenticatedJobCollectionRouteImport } from './routes/_authenticated/job-collection'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedConsultanciesRouteImport } from './routes/_authenticated/consultancies'
 import { Route as AuthenticatedCandidatesRouteImport } from './routes/_authenticated/candidates'
@@ -29,6 +30,7 @@ import { Route as ApiPublicN8nNotifyRouteImport } from './routes/api/public/n8n/
 import { Route as ApiPublicN8nJobsRouteImport } from './routes/api/public/n8n/jobs'
 import { Route as ApiPublicN8nJobStatusEventsRouteImport } from './routes/api/public/n8n/job-status-events'
 import { Route as ApiPublicN8nHealthRouteImport } from './routes/api/public/n8n/health'
+import { Route as ApiPublicN8nCollectedJobsRouteImport } from './routes/api/public/n8n/collected-jobs'
 import { Route as ApiPublicN8nCandidatesRouteImport } from './routes/api/public/n8n/candidates'
 import { Route as ApiPublicN8nTemplatesTemplateNameRouteImport } from './routes/api/public/n8n/templates.$templateName'
 
@@ -87,6 +89,12 @@ const AuthenticatedJobsRoute = AuthenticatedJobsRouteImport.update({
   path: '/jobs',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedJobCollectionRoute =
+  AuthenticatedJobCollectionRouteImport.update({
+    id: '/job-collection',
+    path: '/job-collection',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -134,6 +142,12 @@ const ApiPublicN8nHealthRoute = ApiPublicN8nHealthRouteImport.update({
   path: '/api/public/n8n/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicN8nCollectedJobsRoute =
+  ApiPublicN8nCollectedJobsRouteImport.update({
+    id: '/api/public/n8n/collected-jobs',
+    path: '/api/public/n8n/collected-jobs',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicN8nCandidatesRoute = ApiPublicN8nCandidatesRouteImport.update({
   id: '/api/public/n8n/candidates',
   path: '/api/public/n8n/candidates',
@@ -156,6 +170,7 @@ export interface FileRoutesByFullPath {
   '/candidates': typeof AuthenticatedCandidatesRoute
   '/consultancies': typeof AuthenticatedConsultanciesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/job-collection': typeof AuthenticatedJobCollectionRoute
   '/jobs': typeof AuthenticatedJobsRouteWithChildren
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -163,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/guides/automation': typeof GuidesAutomationRoute
   '/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
   '/api/public/n8n/candidates': typeof ApiPublicN8nCandidatesRoute
+  '/api/public/n8n/collected-jobs': typeof ApiPublicN8nCollectedJobsRoute
   '/api/public/n8n/health': typeof ApiPublicN8nHealthRoute
   '/api/public/n8n/job-status-events': typeof ApiPublicN8nJobStatusEventsRoute
   '/api/public/n8n/jobs': typeof ApiPublicN8nJobsRoute
@@ -179,6 +195,7 @@ export interface FileRoutesByTo {
   '/candidates': typeof AuthenticatedCandidatesRoute
   '/consultancies': typeof AuthenticatedConsultanciesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/job-collection': typeof AuthenticatedJobCollectionRoute
   '/jobs': typeof AuthenticatedJobsRouteWithChildren
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -186,6 +203,7 @@ export interface FileRoutesByTo {
   '/guides/automation': typeof GuidesAutomationRoute
   '/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
   '/api/public/n8n/candidates': typeof ApiPublicN8nCandidatesRoute
+  '/api/public/n8n/collected-jobs': typeof ApiPublicN8nCollectedJobsRoute
   '/api/public/n8n/health': typeof ApiPublicN8nHealthRoute
   '/api/public/n8n/job-status-events': typeof ApiPublicN8nJobStatusEventsRoute
   '/api/public/n8n/jobs': typeof ApiPublicN8nJobsRoute
@@ -204,6 +222,7 @@ export interface FileRoutesById {
   '/_authenticated/candidates': typeof AuthenticatedCandidatesRoute
   '/_authenticated/consultancies': typeof AuthenticatedConsultanciesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/job-collection': typeof AuthenticatedJobCollectionRoute
   '/_authenticated/jobs': typeof AuthenticatedJobsRouteWithChildren
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
@@ -211,6 +230,7 @@ export interface FileRoutesById {
   '/guides/automation': typeof GuidesAutomationRoute
   '/_authenticated/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
   '/api/public/n8n/candidates': typeof ApiPublicN8nCandidatesRoute
+  '/api/public/n8n/collected-jobs': typeof ApiPublicN8nCollectedJobsRoute
   '/api/public/n8n/health': typeof ApiPublicN8nHealthRoute
   '/api/public/n8n/job-status-events': typeof ApiPublicN8nJobStatusEventsRoute
   '/api/public/n8n/jobs': typeof ApiPublicN8nJobsRoute
@@ -229,6 +249,7 @@ export interface FileRouteTypes {
     | '/candidates'
     | '/consultancies'
     | '/dashboard'
+    | '/job-collection'
     | '/jobs'
     | '/notifications'
     | '/reports'
@@ -236,6 +257,7 @@ export interface FileRouteTypes {
     | '/guides/automation'
     | '/jobs/$jobId'
     | '/api/public/n8n/candidates'
+    | '/api/public/n8n/collected-jobs'
     | '/api/public/n8n/health'
     | '/api/public/n8n/job-status-events'
     | '/api/public/n8n/jobs'
@@ -252,6 +274,7 @@ export interface FileRouteTypes {
     | '/candidates'
     | '/consultancies'
     | '/dashboard'
+    | '/job-collection'
     | '/jobs'
     | '/notifications'
     | '/reports'
@@ -259,6 +282,7 @@ export interface FileRouteTypes {
     | '/guides/automation'
     | '/jobs/$jobId'
     | '/api/public/n8n/candidates'
+    | '/api/public/n8n/collected-jobs'
     | '/api/public/n8n/health'
     | '/api/public/n8n/job-status-events'
     | '/api/public/n8n/jobs'
@@ -276,6 +300,7 @@ export interface FileRouteTypes {
     | '/_authenticated/candidates'
     | '/_authenticated/consultancies'
     | '/_authenticated/dashboard'
+    | '/_authenticated/job-collection'
     | '/_authenticated/jobs'
     | '/_authenticated/notifications'
     | '/_authenticated/reports'
@@ -283,6 +308,7 @@ export interface FileRouteTypes {
     | '/guides/automation'
     | '/_authenticated/jobs/$jobId'
     | '/api/public/n8n/candidates'
+    | '/api/public/n8n/collected-jobs'
     | '/api/public/n8n/health'
     | '/api/public/n8n/job-status-events'
     | '/api/public/n8n/jobs'
@@ -299,6 +325,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   GuidesAutomationRoute: typeof GuidesAutomationRoute
   ApiPublicN8nCandidatesRoute: typeof ApiPublicN8nCandidatesRoute
+  ApiPublicN8nCollectedJobsRoute: typeof ApiPublicN8nCollectedJobsRoute
   ApiPublicN8nHealthRoute: typeof ApiPublicN8nHealthRoute
   ApiPublicN8nJobStatusEventsRoute: typeof ApiPublicN8nJobStatusEventsRoute
   ApiPublicN8nJobsRoute: typeof ApiPublicN8nJobsRoute
@@ -385,6 +412,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedJobsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/job-collection': {
+      id: '/_authenticated/job-collection'
+      path: '/job-collection'
+      fullPath: '/job-collection'
+      preLoaderRoute: typeof AuthenticatedJobCollectionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -448,6 +482,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicN8nHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/n8n/collected-jobs': {
+      id: '/api/public/n8n/collected-jobs'
+      path: '/api/public/n8n/collected-jobs'
+      fullPath: '/api/public/n8n/collected-jobs'
+      preLoaderRoute: typeof ApiPublicN8nCollectedJobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/n8n/candidates': {
       id: '/api/public/n8n/candidates'
       path: '/api/public/n8n/candidates'
@@ -481,6 +522,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCandidatesRoute: typeof AuthenticatedCandidatesRoute
   AuthenticatedConsultanciesRoute: typeof AuthenticatedConsultanciesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedJobCollectionRoute: typeof AuthenticatedJobCollectionRoute
   AuthenticatedJobsRoute: typeof AuthenticatedJobsRouteWithChildren
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
@@ -492,6 +534,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCandidatesRoute: AuthenticatedCandidatesRoute,
   AuthenticatedConsultanciesRoute: AuthenticatedConsultanciesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedJobCollectionRoute: AuthenticatedJobCollectionRoute,
   AuthenticatedJobsRoute: AuthenticatedJobsRouteWithChildren,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
@@ -510,6 +553,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   GuidesAutomationRoute: GuidesAutomationRoute,
   ApiPublicN8nCandidatesRoute: ApiPublicN8nCandidatesRoute,
+  ApiPublicN8nCollectedJobsRoute: ApiPublicN8nCollectedJobsRoute,
   ApiPublicN8nHealthRoute: ApiPublicN8nHealthRoute,
   ApiPublicN8nJobStatusEventsRoute: ApiPublicN8nJobStatusEventsRoute,
   ApiPublicN8nJobsRoute: ApiPublicN8nJobsRoute,
