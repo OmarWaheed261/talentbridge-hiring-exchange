@@ -5,9 +5,10 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import {
   Search, RefreshCw, Download, ExternalLink, Trash2, Zap, Filter, Radio,
-  ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight,
+  ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, FileSpreadsheet, FileText,
 } from "lucide-react";
 import { toast } from "sonner";
+import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { PageHeader } from "@/components/PageHeader";
@@ -23,6 +24,10 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
+  DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const SORTABLE = ["created_at", "posted_date", "company_name", "location", "source", "status", "job_title"] as const;
 type SortKey = (typeof SORTABLE)[number];
