@@ -85,7 +85,7 @@ const statusVariants: Record<string, string> = {
 
 function JobCollectionPage() {
   const qc = useQueryClient();
-  const { roles } = useAuth();
+  const { roles, user } = useAuth();
   const isAdmin = roles.includes("super_admin");
   const params = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
