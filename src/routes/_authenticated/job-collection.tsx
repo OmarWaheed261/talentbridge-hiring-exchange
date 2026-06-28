@@ -284,7 +284,9 @@ function JobCollectionPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const fetchAllFiltered = async (): Promise<CollectedJob[]> => {
+  const fetchAllFiltered = async (
+    onProgress?: (loaded: number) => void,
+  ): Promise<CollectedJob[]> => {
     const rows: CollectedJob[] = [];
     const CHUNK = 1000;
     let from = 0;
@@ -308,6 +310,7 @@ function JobCollectionPage() {
       if (error) throw error;
       const batch = (data ?? []) as CollectedJob[];
       rows.push(...batch);
+      onProgress?.(rows.length);
       if (batch.length < CHUNK) break;
       from += CHUNK;
     }
