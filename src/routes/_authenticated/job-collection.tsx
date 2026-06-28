@@ -85,7 +85,7 @@ function JobCollectionPage() {
   const navigate = useNavigate({ from: Route.fullPath });
 
   const setParam = <K extends keyof typeof params>(key: K, value: (typeof params)[K]) => {
-    navigate({ search: (prev) => ({ ...prev, [key]: value, page: key === "page" ? (value as number) : 1 }) });
+    navigate({ search: (prev: typeof params) => ({ ...prev, [key]: value, page: key === "page" ? (value as number) : 1 }) });
   };
 
   // Debounce search input so we don't slam the DB on each keystroke
@@ -134,7 +134,7 @@ function JobCollectionPage() {
       if (error) throw error;
       return { rows: (data ?? []) as CollectedJob[], total: count ?? 0 };
     },
-    placeholderData: (prev) => prev,
+    placeholderData: (prev: typeof params) => prev,
   });
 
   const jobs = result?.rows ?? [];
@@ -319,9 +319,9 @@ function JobCollectionPage() {
 
   const toggleSort = (key: SortKey) => {
     if (params.sort === key) {
-      navigate({ search: (prev) => ({ ...prev, dir: prev.dir === "asc" ? "desc" : "asc", page: 1 }) });
+      navigate({ search: (prev: typeof params) => ({ ...prev, dir: prev.dir === "asc" ? "desc" : "asc", page: 1 }) });
     } else {
-      navigate({ search: (prev) => ({ ...prev, sort: key, dir: "desc", page: 1 }) });
+      navigate({ search: (prev: typeof params) => ({ ...prev, sort: key, dir: "desc", page: 1 }) });
     }
   };
 
