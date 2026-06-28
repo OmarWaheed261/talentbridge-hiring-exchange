@@ -5,10 +5,11 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 const UrlSchema = z
   .string()
   .trim()
+  .max(2048)
   .url()
-  .refine((u) => /^https?:\/\//i.test(u), "Must be http(s) URL")
-  .max(2048);
+  .refine((u) => /^https?:\/\//i.test(u), "Must be http(s) URL");
 const SecretSchema = z.string().min(8).max(512);
+
 
 async function assertAdmin(ctx: { supabase: any; userId: string }) {
   const { data, error } = await ctx.supabase.rpc("has_role", {
