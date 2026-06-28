@@ -74,8 +74,31 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d0b89e74-cf0f-4dee-9d2d-561a86df536f/id-preview-bd3f68a0--5b5c7bbd-89d9-4296-8b02-1ea4ca9062d7.lovable.app-1782662403662.png" },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "TalentBridge AI" },
     ],
     links: [{ rel: "stylesheet", href: appCss }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              name: "TalentBridge AI",
+              url: "https://talentbridge-pro-hub.lovable.app",
+              description:
+                "Recruitment automation platform connecting US companies with qualified consultancy talent through n8n-powered workflows.",
+            },
+            {
+              "@type": "WebSite",
+              name: "TalentBridge AI",
+              url: "https://talentbridge-pro-hub.lovable.app",
+            },
+          ],
+        }),
+      },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
