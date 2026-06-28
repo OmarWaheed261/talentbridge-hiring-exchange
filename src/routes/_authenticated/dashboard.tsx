@@ -147,11 +147,22 @@ function Dashboard() {
 
         description="Here's what's happening across your recruitment pipeline."
         actions={
-          <Link to="/jobs">
-            <Button className="bg-gradient-primary text-primary-foreground shadow-glow">
-              View jobs <ArrowUpRight className="ml-1 h-4 w-4" />
-            </Button>
-          </Link>
+          <div className="flex items-center gap-3">
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+                isLive ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"
+              }`}
+              title={isLive ? "Realtime connected" : "Connecting…"}
+            >
+              <Radio className={`h-3 w-3 ${isLive ? "animate-pulse" : ""}`} />
+              {isLive ? "Live" : "Offline"}
+            </span>
+            <Link to="/jobs">
+              <Button className="bg-gradient-primary text-primary-foreground shadow-glow">
+                View jobs <ArrowUpRight className="ml-1 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
         }
       />
 
