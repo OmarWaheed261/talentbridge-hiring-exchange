@@ -1,0 +1,70 @@
+{
+  "name": "TalentBridge — Update Candidate Status",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "talentbridge-candidate-status",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Webhook (status change)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "talentbridge-candidate-status"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            { "name": "baseUrl", "value": "https://project--5b5c7bbd-89d9-4296-8b02-1ea4ca9062d7-dev.lovable.app" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-base-url",
+      "name": "Set Base URL",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{$('Set Base URL').item.json.baseUrl}}/api/public/n8n/candidates",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ id: ($json.body?.id ?? $json.id), status: ($json.body?.status ?? $json.status), notes: ($json.body?.notes ?? $json.notes) }) }}",
+        "options": {}
+      },
+      "id": "patch",
+      "name": "PATCH /api/public/n8n/candidates",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [700, 300],
+      "credentials": { "httpHeaderAuth": { "id": "REPLACE_WITH_CREDENTIAL_ID", "name": "TalentBridge n8n Secret" } }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "respond",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [940, 300]
+    }
+  ],
+  "connections": {
+    "Webhook (status change)": { "main": [[{ "node": "Set Base URL", "type": "main", "index": 0 }]] },
+    "Set Base URL": { "main": [[{ "node": "PATCH /api/public/n8n/candidates", "type": "main", "index": 0 }]] },
+    "PATCH /api/public/n8n/candidates": { "main": [[{ "node": "Respond", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}

@@ -1,0 +1,81 @@
+{
+  "name": "TalentBridge — Ingest Candidate Submission",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "talentbridge-candidate",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Webhook (candidate inbound)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "talentbridge-candidate"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            { "name": "baseUrl", "value": "https://project--5b5c7bbd-89d9-4296-8b02-1ea4ca9062d7-dev.lovable.app" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-base-url",
+      "name": "Set Base URL",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Map the incoming webhook payload to the candidate schema.\n// Expected upstream fields (adjust to your form / parser):\n//   name, email, phone, experience, skills (string|array), resume_url,\n//   notes, linked_job_id, consultancy_id\nconst src = $input.first().json.body ?? $input.first().json;\nconst toArr = (v) => Array.isArray(v)\n  ? v\n  : typeof v === 'string'\n    ? v.split(',').map((s) => s.trim()).filter(Boolean)\n    : [];\nreturn [{\n  json: {\n    candidate_name: src.name ?? src.candidate_name,\n    email: src.email ?? null,\n    phone: src.phone ?? null,\n    experience: src.experience ?? null,\n    skills: toArr(src.skills),\n    resume_url: src.resume_url ?? null,\n    notes: src.notes ?? null,\n    linked_job_id: src.linked_job_id ?? null,\n    consultancy_id: src.consultancy_id ?? null,\n    status: src.status ?? 'submitted',\n  },\n}];"
+      },
+      "id": "map",
+      "name": "Map → candidate schema",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [700, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$('Set Base URL').item.json.baseUrl}}/api/public/n8n/candidates",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "post-candidate",
+      "name": "POST /api/public/n8n/candidates",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [940, 300],
+      "credentials": { "httpHeaderAuth": { "id": "REPLACE_WITH_CREDENTIAL_ID", "name": "TalentBridge n8n Secret" } }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "respond",
+      "name": "Respond to caller",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1180, 300]
+    }
+  ],
+  "connections": {
+    "Webhook (candidate inbound)": { "main": [[{ "node": "Set Base URL", "type": "main", "index": 0 }]] },
+    "Set Base URL": { "main": [[{ "node": "Map → candidate schema", "type": "main", "index": 0 }]] },
+    "Map → candidate schema": { "main": [[{ "node": "POST /api/public/n8n/candidates", "type": "main", "index": 0 }]] },
+    "POST /api/public/n8n/candidates": { "main": [[{ "node": "Respond to caller", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}

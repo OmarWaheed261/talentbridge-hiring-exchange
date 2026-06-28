@@ -27,6 +27,7 @@ import { Route as ApiPublicN8nNotifyRouteImport } from './routes/api/public/n8n/
 import { Route as ApiPublicN8nJobsRouteImport } from './routes/api/public/n8n/jobs'
 import { Route as ApiPublicN8nHealthRouteImport } from './routes/api/public/n8n/health'
 import { Route as ApiPublicN8nCandidatesRouteImport } from './routes/api/public/n8n/candidates'
+import { Route as ApiPublicN8nTemplatesTemplateNameRouteImport } from './routes/api/public/n8n/templates.$templateName'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -119,6 +120,12 @@ const ApiPublicN8nCandidatesRoute = ApiPublicN8nCandidatesRouteImport.update({
   path: '/api/public/n8n/candidates',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicN8nTemplatesTemplateNameRoute =
+  ApiPublicN8nTemplatesTemplateNameRouteImport.update({
+    id: '/api/public/n8n/templates/$templateName',
+    path: '/api/public/n8n/templates/$templateName',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -138,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/api/public/n8n/health': typeof ApiPublicN8nHealthRoute
   '/api/public/n8n/jobs': typeof ApiPublicN8nJobsRoute
   '/api/public/n8n/notify': typeof ApiPublicN8nNotifyRoute
+  '/api/public/n8n/templates/$templateName': typeof ApiPublicN8nTemplatesTemplateNameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -157,6 +165,7 @@ export interface FileRoutesByTo {
   '/api/public/n8n/health': typeof ApiPublicN8nHealthRoute
   '/api/public/n8n/jobs': typeof ApiPublicN8nJobsRoute
   '/api/public/n8n/notify': typeof ApiPublicN8nNotifyRoute
+  '/api/public/n8n/templates/$templateName': typeof ApiPublicN8nTemplatesTemplateNameRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -178,6 +187,7 @@ export interface FileRoutesById {
   '/api/public/n8n/health': typeof ApiPublicN8nHealthRoute
   '/api/public/n8n/jobs': typeof ApiPublicN8nJobsRoute
   '/api/public/n8n/notify': typeof ApiPublicN8nNotifyRoute
+  '/api/public/n8n/templates/$templateName': typeof ApiPublicN8nTemplatesTemplateNameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -199,6 +209,7 @@ export interface FileRouteTypes {
     | '/api/public/n8n/health'
     | '/api/public/n8n/jobs'
     | '/api/public/n8n/notify'
+    | '/api/public/n8n/templates/$templateName'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -218,6 +229,7 @@ export interface FileRouteTypes {
     | '/api/public/n8n/health'
     | '/api/public/n8n/jobs'
     | '/api/public/n8n/notify'
+    | '/api/public/n8n/templates/$templateName'
   id:
     | '__root__'
     | '/'
@@ -238,6 +250,7 @@ export interface FileRouteTypes {
     | '/api/public/n8n/health'
     | '/api/public/n8n/jobs'
     | '/api/public/n8n/notify'
+    | '/api/public/n8n/templates/$templateName'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -250,6 +263,7 @@ export interface RootRouteChildren {
   ApiPublicN8nHealthRoute: typeof ApiPublicN8nHealthRoute
   ApiPublicN8nJobsRoute: typeof ApiPublicN8nJobsRoute
   ApiPublicN8nNotifyRoute: typeof ApiPublicN8nNotifyRoute
+  ApiPublicN8nTemplatesTemplateNameRoute: typeof ApiPublicN8nTemplatesTemplateNameRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -380,6 +394,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicN8nCandidatesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/n8n/templates/$templateName': {
+      id: '/api/public/n8n/templates/$templateName'
+      path: '/api/public/n8n/templates/$templateName'
+      fullPath: '/api/public/n8n/templates/$templateName'
+      preLoaderRoute: typeof ApiPublicN8nTemplatesTemplateNameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -429,6 +450,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicN8nHealthRoute: ApiPublicN8nHealthRoute,
   ApiPublicN8nJobsRoute: ApiPublicN8nJobsRoute,
   ApiPublicN8nNotifyRoute: ApiPublicN8nNotifyRoute,
+  ApiPublicN8nTemplatesTemplateNameRoute:
+    ApiPublicN8nTemplatesTemplateNameRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
