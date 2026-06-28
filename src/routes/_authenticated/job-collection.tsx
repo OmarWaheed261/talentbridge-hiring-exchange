@@ -28,6 +28,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { SavedViewsBar } from "@/components/SavedViewsBar";
 
 const SORTABLE = ["created_at", "posted_date", "company_name", "location", "source", "status", "job_title"] as const;
 type SortKey = (typeof SORTABLE)[number];
@@ -535,6 +536,13 @@ function JobCollectionPage() {
             >
               Reset
             </Button>
+            <div className="ml-auto">
+              <SavedViewsBar
+                pageKey="job-collection"
+                currentParams={params}
+                onApply={(p) => navigate({ search: () => ({ ...p, page: 1 }) })}
+              />
+            </div>
           </div>
         </div>
 
