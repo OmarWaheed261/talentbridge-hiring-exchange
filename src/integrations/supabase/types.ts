@@ -116,6 +116,41 @@ export type Database = {
         }
         Relationships: []
       }
+      integration_settings: {
+        Row: {
+          consultancy_id: string
+          created_at: string
+          n8n_webhook_secret: string | null
+          n8n_webhook_url: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          consultancy_id: string
+          created_at?: string
+          n8n_webhook_secret?: string | null
+          n8n_webhook_url?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          consultancy_id?: string
+          created_at?: string
+          n8n_webhook_secret?: string | null
+          n8n_webhook_url?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_settings_consultancy_id_fkey"
+            columns: ["consultancy_id"]
+            isOneToOne: true
+            referencedRelation: "consultancies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_status_events: {
         Row: {
           changed_by: string | null
