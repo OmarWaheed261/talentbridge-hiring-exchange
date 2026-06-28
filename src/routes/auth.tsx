@@ -11,6 +11,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export const Route = createFileRoute("/auth")({
   ssr: false,
   component: AuthPage,
+  head: () => ({
+    meta: [
+      { title: "Sign In — TalentBridge AI" },
+      {
+        name: "description",
+        content:
+          "Sign in or create a TalentBridge AI account to manage jobs, candidates, and automated recruitment workflows for your consultancy or hiring team.",
+      },
+      { property: "og:title", content: "Sign In — TalentBridge AI" },
+      {
+        property: "og:description",
+        content: "Access your TalentBridge AI workspace to manage jobs, candidates, and recruitment automations.",
+      },
+      { property: "og:url", content: "https://talentbridge-pro-hub.lovable.app/auth" },
+    ],
+    links: [{ rel: "canonical", href: "https://talentbridge-pro-hub.lovable.app/auth" }],
+  }),
 });
 
 function AuthPage() {
