@@ -164,6 +164,39 @@ export type Database = {
         }
         Relationships: []
       }
+      export_audit_log: {
+        Row: {
+          created_at: string
+          filters: Json
+          format: string
+          id: string
+          page_key: string
+          row_count: number
+          scope: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          filters?: Json
+          format: string
+          id?: string
+          page_key: string
+          row_count?: number
+          scope: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          filters?: Json
+          format?: string
+          id?: string
+          page_key?: string
+          row_count?: number
+          scope?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       integration_settings: {
         Row: {
           consultancy_id: string
