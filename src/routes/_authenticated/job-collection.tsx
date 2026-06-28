@@ -504,6 +504,10 @@ function JobCollectionPage() {
                 <DropdownMenuItem onClick={() => handleExport("xlsx", "all")}>
                   <FileSpreadsheet className="h-4 w-4 mr-2" /> Excel (.xlsx)
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setHistoryOpen(true)}>
+                  <History className="h-4 w-4 mr-2" /> Export history…
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             {isAdmin && (
