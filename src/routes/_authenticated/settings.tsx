@@ -47,9 +47,11 @@ function SettingsPage() {
           <TabsList>
             <TabsTrigger value="profile"><UserIcon className="h-4 w-4 mr-1.5" /> Profile</TabsTrigger>
             <TabsTrigger value="company"><Building2 className="h-4 w-4 mr-1.5" /> Company</TabsTrigger>
+            <TabsTrigger value="integrations"><Plug className="h-4 w-4 mr-1.5" /> Integrations</TabsTrigger>
             <TabsTrigger value="notifications"><Bell className="h-4 w-4 mr-1.5" /> Notifications</TabsTrigger>
             <TabsTrigger value="roles"><Shield className="h-4 w-4 mr-1.5" /> Roles</TabsTrigger>
           </TabsList>
+
 
           <TabsContent value="profile" className="mt-6">
             <div className="glass rounded-2xl p-6 shadow-card space-y-4">
