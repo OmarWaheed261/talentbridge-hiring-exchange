@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Briefcase, Users, Building2, Workflow, Bell,
-  BarChart3, Settings, Sparkles, LogOut, Search,
+  BarChart3, Settings, Sparkles, LogOut, Search, Radar,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useNavigate } from "@tanstack/react-router";
@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 const nav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/jobs", label: "Jobs", icon: Briefcase },
+  { to: "/job-collection", label: "Job Collection Engine", icon: Radar },
   { to: "/candidates", label: "Candidates", icon: Users },
   { to: "/consultancies", label: "Consultancies", icon: Building2 },
   { to: "/automation", label: "Automation Center", icon: Workflow },
