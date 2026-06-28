@@ -1,0 +1,15 @@
+# TalentBridge AI
+
+> TalentBridge AI is a recruitment automation platform that connects US companies with qualified consultancy talent through n8n-powered workflows.
+
+TalentBridge AI is an applicant tracking and candidate management platform built for staffing agencies and in-house recruiting teams. It centralizes open roles, candidate submissions, and interview pipelines, and uses n8n workflows to automate job ingestion, candidate notifications, and status syncing.
+
+## Pages
+
+- [Home](/): Product overview and entry point to the platform.
+- [Sign in](/auth): Sign in or create a TalentBridge AI account.
+- [Recruitment Automation Guide](/guides/automation): Guide on the benefits of recruitment automation software versus manual candidate tracking, with a focus on n8n-driven workflows.
+
+## Optional
+
+- [Forgot password](/forgot-password): Request a password reset email.
