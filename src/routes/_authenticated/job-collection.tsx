@@ -431,10 +431,31 @@ function JobCollectionPage() {
               <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? "animate-spin" : ""}`} />
               Refresh
             </Button>
-            <Button variant="outline" size="sm" onClick={exportCsv}>
-              <Download className="h-4 w-4 mr-2" />
-              Export page
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" disabled={exporting}>
+                  <Download className={`h-4 w-4 mr-2 ${exporting ? "animate-pulse" : ""}`} />
+                  {exporting ? "Exporting…" : "Export"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Current page ({jobs.length})</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => handleExport("csv", "page")}>
+                  <FileText className="h-4 w-4 mr-2" /> CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport("xlsx", "page")}>
+                  <FileSpreadsheet className="h-4 w-4 mr-2" /> Excel (.xlsx)
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>All filtered ({total})</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => handleExport("csv", "all")}>
+                  <FileText className="h-4 w-4 mr-2" /> CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport("xlsx", "all")}>
+                  <FileSpreadsheet className="h-4 w-4 mr-2" /> Excel (.xlsx)
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             {isAdmin && (
               <>
                 <Button variant="outline" size="sm" onClick={() => clearDuplicates.mutate()}>
