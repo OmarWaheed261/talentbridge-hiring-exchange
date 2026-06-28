@@ -89,7 +89,30 @@ function JobCollectionPage() {
       .channel("collected_jobs_rt")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "collected_jobs" },
+        { event: "INSERT", schema: "public", table: "collected_jobs" },
+        (payload) => {
+          const row = payload.new as { job_title?: string; company_name?: string };
+          toast.success(`New job ingested: ${row.job_title ?? "Untitled"}`, {
+            description: row.company_name ?? undefined,
+          });
+          qc.invalidateQueries({ queryKey: ["collected_jobs"] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "collected_jobs" },
+        (payload) => {
+          const oldRow = payload.old as { status?: string };
+          const newRow = payload.new as { job_title?: string; status?: string };
+          if (oldRow.status !== newRow.status) {
+            toast.message(`${newRow.job_title ?? "Job"} → ${newRow.status ?? ""}`);
+          }
+          qc.invalidateQueries({ queryKey: ["collected_jobs"] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "collected_jobs" },
         () => qc.invalidateQueries({ queryKey: ["collected_jobs"] }),
       )
       .subscribe();
