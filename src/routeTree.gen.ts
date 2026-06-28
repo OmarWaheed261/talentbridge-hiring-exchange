@@ -30,6 +30,7 @@ import { Route as ApiPublicN8nNotifyRouteImport } from './routes/api/public/n8n/
 import { Route as ApiPublicN8nJobsRouteImport } from './routes/api/public/n8n/jobs'
 import { Route as ApiPublicN8nJobStatusEventsRouteImport } from './routes/api/public/n8n/job-status-events'
 import { Route as ApiPublicN8nHealthRouteImport } from './routes/api/public/n8n/health'
+import { Route as ApiPublicN8nExportJobsRouteImport } from './routes/api/public/n8n/export-jobs'
 import { Route as ApiPublicN8nCollectedJobsRouteImport } from './routes/api/public/n8n/collected-jobs'
 import { Route as ApiPublicN8nCandidatesRouteImport } from './routes/api/public/n8n/candidates'
 import { Route as ApiPublicN8nTemplatesTemplateNameRouteImport } from './routes/api/public/n8n/templates.$templateName'
@@ -142,6 +143,11 @@ const ApiPublicN8nHealthRoute = ApiPublicN8nHealthRouteImport.update({
   path: '/api/public/n8n/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicN8nExportJobsRoute = ApiPublicN8nExportJobsRouteImport.update({
+  id: '/api/public/n8n/export-jobs',
+  path: '/api/public/n8n/export-jobs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicN8nCollectedJobsRoute =
   ApiPublicN8nCollectedJobsRouteImport.update({
     id: '/api/public/n8n/collected-jobs',
@@ -179,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
   '/api/public/n8n/candidates': typeof ApiPublicN8nCandidatesRoute
   '/api/public/n8n/collected-jobs': typeof ApiPublicN8nCollectedJobsRoute
+  '/api/public/n8n/export-jobs': typeof ApiPublicN8nExportJobsRoute
   '/api/public/n8n/health': typeof ApiPublicN8nHealthRoute
   '/api/public/n8n/job-status-events': typeof ApiPublicN8nJobStatusEventsRoute
   '/api/public/n8n/jobs': typeof ApiPublicN8nJobsRoute
@@ -204,6 +211,7 @@ export interface FileRoutesByTo {
   '/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
   '/api/public/n8n/candidates': typeof ApiPublicN8nCandidatesRoute
   '/api/public/n8n/collected-jobs': typeof ApiPublicN8nCollectedJobsRoute
+  '/api/public/n8n/export-jobs': typeof ApiPublicN8nExportJobsRoute
   '/api/public/n8n/health': typeof ApiPublicN8nHealthRoute
   '/api/public/n8n/job-status-events': typeof ApiPublicN8nJobStatusEventsRoute
   '/api/public/n8n/jobs': typeof ApiPublicN8nJobsRoute
@@ -231,6 +239,7 @@ export interface FileRoutesById {
   '/_authenticated/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
   '/api/public/n8n/candidates': typeof ApiPublicN8nCandidatesRoute
   '/api/public/n8n/collected-jobs': typeof ApiPublicN8nCollectedJobsRoute
+  '/api/public/n8n/export-jobs': typeof ApiPublicN8nExportJobsRoute
   '/api/public/n8n/health': typeof ApiPublicN8nHealthRoute
   '/api/public/n8n/job-status-events': typeof ApiPublicN8nJobStatusEventsRoute
   '/api/public/n8n/jobs': typeof ApiPublicN8nJobsRoute
@@ -258,6 +267,7 @@ export interface FileRouteTypes {
     | '/jobs/$jobId'
     | '/api/public/n8n/candidates'
     | '/api/public/n8n/collected-jobs'
+    | '/api/public/n8n/export-jobs'
     | '/api/public/n8n/health'
     | '/api/public/n8n/job-status-events'
     | '/api/public/n8n/jobs'
@@ -283,6 +293,7 @@ export interface FileRouteTypes {
     | '/jobs/$jobId'
     | '/api/public/n8n/candidates'
     | '/api/public/n8n/collected-jobs'
+    | '/api/public/n8n/export-jobs'
     | '/api/public/n8n/health'
     | '/api/public/n8n/job-status-events'
     | '/api/public/n8n/jobs'
@@ -309,6 +320,7 @@ export interface FileRouteTypes {
     | '/_authenticated/jobs/$jobId'
     | '/api/public/n8n/candidates'
     | '/api/public/n8n/collected-jobs'
+    | '/api/public/n8n/export-jobs'
     | '/api/public/n8n/health'
     | '/api/public/n8n/job-status-events'
     | '/api/public/n8n/jobs'
@@ -326,6 +338,7 @@ export interface RootRouteChildren {
   GuidesAutomationRoute: typeof GuidesAutomationRoute
   ApiPublicN8nCandidatesRoute: typeof ApiPublicN8nCandidatesRoute
   ApiPublicN8nCollectedJobsRoute: typeof ApiPublicN8nCollectedJobsRoute
+  ApiPublicN8nExportJobsRoute: typeof ApiPublicN8nExportJobsRoute
   ApiPublicN8nHealthRoute: typeof ApiPublicN8nHealthRoute
   ApiPublicN8nJobStatusEventsRoute: typeof ApiPublicN8nJobStatusEventsRoute
   ApiPublicN8nJobsRoute: typeof ApiPublicN8nJobsRoute
@@ -482,6 +495,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicN8nHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/n8n/export-jobs': {
+      id: '/api/public/n8n/export-jobs'
+      path: '/api/public/n8n/export-jobs'
+      fullPath: '/api/public/n8n/export-jobs'
+      preLoaderRoute: typeof ApiPublicN8nExportJobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/n8n/collected-jobs': {
       id: '/api/public/n8n/collected-jobs'
       path: '/api/public/n8n/collected-jobs'
@@ -554,6 +574,7 @@ const rootRouteChildren: RootRouteChildren = {
   GuidesAutomationRoute: GuidesAutomationRoute,
   ApiPublicN8nCandidatesRoute: ApiPublicN8nCandidatesRoute,
   ApiPublicN8nCollectedJobsRoute: ApiPublicN8nCollectedJobsRoute,
+  ApiPublicN8nExportJobsRoute: ApiPublicN8nExportJobsRoute,
   ApiPublicN8nHealthRoute: ApiPublicN8nHealthRoute,
   ApiPublicN8nJobStatusEventsRoute: ApiPublicN8nJobStatusEventsRoute,
   ApiPublicN8nJobsRoute: ApiPublicN8nJobsRoute,

@@ -5,10 +5,12 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import {
   Search, RefreshCw, Download, ExternalLink, Trash2, Zap, Filter, Radio,
-  ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, FileSpreadsheet, FileText, History,
+  ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, FileSpreadsheet, FileText, History, CloudUpload,
 } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
+import { useServerFn } from "@tanstack/react-start";
+import { queueExport, getSignedExportUrl } from "@/lib/export-jobs.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { PageHeader } from "@/components/PageHeader";
@@ -432,6 +434,82 @@ function JobCollectionPage() {
     }
   };
 
+  // --- Queued (n8n) exports -------------------------------------------------
+  const queueExportFn = useServerFn(queueExport);
+  const signExportFn = useServerFn(getSignedExportUrl);
+  const [queuing, setQueuing] = useState(false);
+
+  const handleQueueExport = async (format: "csv" | "xlsx") => {
+    const label = format.toUpperCase();
+    const toastId = `queue-${format}`;
+    try {
+      setQueuing(true);
+      toast.loading(`Queuing ${label} export in n8n…`, { id: toastId });
+      const { q, status, source, company, location: loc, skill, sort, dir } = params;
+      const job = await queueExportFn({
+        data: {
+          page_key: "job-collection",
+          format,
+          filters: { q, status, source, company, location: loc, skill, sort, dir },
+        },
+      });
+      toast.success(`Export queued — we'll notify you when it's ready.`, {
+        id: toastId,
+        description: `Job #${job.id.slice(0, 8)} · ${label}`,
+      });
+    } catch (e) {
+      toast.error((e as Error).message, { id: toastId });
+    } finally {
+      setQueuing(false);
+    }
+  };
+
+  const downloadReadyJob = async (jobId: string) => {
+    const t = toast.loading("Preparing download…", { id: `dl-${jobId}` });
+    try {
+      const { url, format, file_path } = await signExportFn({ data: { jobId } });
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = file_path.split("/").pop() ?? `export.${format}`;
+      a.click();
+      toast.success("Download started", { id: t });
+    } catch (e) {
+      toast.error((e as Error).message, { id: t });
+    }
+  };
+
+  // Realtime: notify when a queued export becomes ready or fails.
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel(`export_jobs_${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "export_jobs", filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          const next = payload.new as { id: string; status: string; format: string; error: string | null; row_count: number | null };
+          if (next.status === "ready") {
+            toast.success("Export ready", {
+              id: `ready-${next.id}`,
+              description: `${(next.row_count ?? 0).toLocaleString()} rows · ${next.format.toUpperCase()}`,
+              action: { label: "Download", onClick: () => downloadReadyJob(next.id) },
+              duration: 15000,
+            });
+          } else if (next.status === "failed") {
+            toast.error("Export failed", {
+              id: `failed-${next.id}`,
+              description: next.error ?? "Unknown error",
+            });
+          }
+        },
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+
+
 
   const triggerSync = async () => {
     toast.info("Triggering manual sync…");
@@ -503,6 +581,14 @@ function JobCollectionPage() {
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleExport("xlsx", "all")}>
                   <FileSpreadsheet className="h-4 w-4 mr-2" /> Excel (.xlsx)
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Queue in n8n (large datasets)</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => handleQueueExport("csv")} disabled={queuing}>
+                  <CloudUpload className="h-4 w-4 mr-2" /> Queue CSV export
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleQueueExport("xlsx")} disabled={queuing}>
+                  <CloudUpload className="h-4 w-4 mr-2" /> Queue Excel export
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setHistoryOpen(true)}>
