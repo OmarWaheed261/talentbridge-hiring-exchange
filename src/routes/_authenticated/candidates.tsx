@@ -18,6 +18,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import { useAuth } from "@/lib/auth";
+import { dispatchN8nEvent } from "@/lib/n8n-dispatch.functions";
 
 export const Route = createFileRoute("/_authenticated/candidates")({
   head: () => ({
@@ -72,6 +73,7 @@ function CandidatesPage() {
     mutationFn: async ({ id, status }: { id: string; status: Status }) => {
       const { error } = await supabase.from("candidates").update({ status }).eq("id", id);
       if (error) throw error;
+      void dispatchN8nEvent({ data: { event: "candidate.status_changed", payload: { id, status } } });
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["candidates"] }); },
     onError: (e: Error) => toast.error(e.message),
@@ -222,7 +224,7 @@ function CandidateDialog({ onClose }: { onClose: () => void }) {
         resume_url = path;
       }
 
-      const { error } = await supabase.from("candidates").insert({
+      const { data: inserted, error } = await supabase.from("candidates").insert({
         candidate_name: form.candidate_name,
         email: form.email || null,
         phone: form.phone || null,
@@ -232,8 +234,9 @@ function CandidateDialog({ onClose }: { onClose: () => void }) {
         consultancy_id: consultancyId ?? null,
         resume_url,
         skills: form.skills.split(",").map((s) => s.trim()).filter(Boolean),
-      });
+      }).select("id, candidate_name, email, status, linked_job_id, consultancy_id").single();
       if (error) throw error;
+      void dispatchN8nEvent({ data: { event: "candidate.submitted", payload: inserted ?? {} } });
     },
     onSuccess: () => { toast.success("Candidate submitted"); qc.invalidateQueries({ queryKey: ["candidates"] }); onClose(); },
     onError: (e: Error) => toast.error(e.message),

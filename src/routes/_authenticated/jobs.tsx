@@ -17,6 +17,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import { useAuth } from "@/lib/auth";
+import { dispatchN8nEvent } from "@/lib/n8n-dispatch.functions";
 
 export const Route = createFileRoute("/_authenticated/jobs")({
   component: JobsPage,
@@ -195,7 +196,7 @@ function JobDialog({ onClose }: { onClose: () => void }) {
 
   const create = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("jobs").insert({
+      const { data: inserted, error } = await supabase.from("jobs").insert({
         job_title: form.job_title,
         company_name: form.company_name,
         location: form.location || null,
@@ -204,8 +205,9 @@ function JobDialog({ onClose }: { onClose: () => void }) {
         experience_level: form.experience_level as "entry" | "mid" | "senior" | "lead" | "principal",
         job_description: form.job_description || null,
         required_skills: form.required_skills.split(",").map((s) => s.trim()).filter(Boolean),
-      });
+      }).select("id, job_title, company_name, status, location, employment_type").single();
       if (error) throw error;
+      void dispatchN8nEvent({ data: { event: "job.created", payload: inserted ?? {} } });
     },
     onSuccess: () => { toast.success("Job created"); qc.invalidateQueries({ queryKey: ["jobs"] }); onClose(); },
     onError: (e: Error) => toast.error(e.message),
