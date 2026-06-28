@@ -116,6 +116,47 @@ export type Database = {
         }
         Relationships: []
       }
+      job_status_events: {
+        Row: {
+          changed_by: string | null
+          consultancy_id: string | null
+          created_at: string
+          id: string
+          job_id: string
+          new_status: string
+          old_status: string | null
+          processed_at: string | null
+        }
+        Insert: {
+          changed_by?: string | null
+          consultancy_id?: string | null
+          created_at?: string
+          id?: string
+          job_id: string
+          new_status: string
+          old_status?: string | null
+          processed_at?: string | null
+        }
+        Update: {
+          changed_by?: string | null
+          consultancy_id?: string | null
+          created_at?: string
+          id?: string
+          job_id?: string
+          new_status?: string
+          old_status?: string | null
+          processed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_status_events_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       jobs: {
         Row: {
           company_name: string

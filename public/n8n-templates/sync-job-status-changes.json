@@ -1,0 +1,130 @@
+{
+  "name": "TalentBridge — Sync Job Status Changes",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "minutes", "minutesInterval": 1 }] }
+      },
+      "id": "cron",
+      "name": "Every minute",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            { "name": "baseUrl", "value": "https://project--5b5c7bbd-89d9-4296-8b02-1ea4ca9062d7-dev.lovable.app" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-base-url",
+      "name": "Set Base URL",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{$('Set Base URL').item.json.baseUrl}}/api/public/n8n/job-status-events?limit=100",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "fetch-events",
+      "name": "GET /api/public/n8n/job-status-events",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300],
+      "credentials": { "httpHeaderAuth": { "id": "REPLACE_WITH_CREDENTIAL_ID", "name": "TalentBridge n8n Secret" } }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "events",
+        "options": {}
+      },
+      "id": "split",
+      "name": "Split events",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [920, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [
+            {
+              "id": "has-id",
+              "leftValue": "={{$json.id}}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty", "singleValue": true }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "filter",
+      "name": "Skip empty",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [1160, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Shape each event for downstream consumers (Slack, Sheets, CRM, etc.).\n// Replace this node with your own destination(s).\nreturn $input.all().map((i) => ({\n  json: {\n    event_id: i.json.id,\n    job_id: i.json.job_id,\n    job_title: i.json.job?.title ?? null,\n    consultancy_id: i.json.consultancy_id,\n    old_status: i.json.old_status,\n    new_status: i.json.new_status,\n    changed_at: i.json.created_at,\n  },\n}));"
+      },
+      "id": "shape",
+      "name": "Shape payload (customise)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1400, 300]
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "ids",
+        "include": "specifiedFields",
+        "fieldsToInclude": "event_id",
+        "options": {}
+      },
+      "id": "aggregate",
+      "name": "Collect IDs",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [1640, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$('Set Base URL').item.json.baseUrl}}/api/public/n8n/job-status-events",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ ids: ($json.ids ?? []).map((x) => x.event_id ?? x) }) }}",
+        "options": {}
+      },
+      "id": "ack",
+      "name": "POST acknowledge processed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1880, 300],
+      "credentials": { "httpHeaderAuth": { "id": "REPLACE_WITH_CREDENTIAL_ID", "name": "TalentBridge n8n Secret" } }
+    }
+  ],
+  "connections": {
+    "Every minute": { "main": [[{ "node": "Set Base URL", "type": "main", "index": 0 }]] },
+    "Set Base URL": { "main": [[{ "node": "GET /api/public/n8n/job-status-events", "type": "main", "index": 0 }]] },
+    "GET /api/public/n8n/job-status-events": { "main": [[{ "node": "Split events", "type": "main", "index": 0 }]] },
+    "Split events": { "main": [[{ "node": "Skip empty", "type": "main", "index": 0 }]] },
+    "Skip empty": { "main": [[{ "node": "Shape payload (customise)", "type": "main", "index": 0 }]] },
+    "Shape payload (customise)": { "main": [[{ "node": "Collect IDs", "type": "main", "index": 0 }]] },
+    "Collect IDs": { "main": [[{ "node": "POST acknowledge processed", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}
