@@ -2,28 +2,106 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { verifyN8nRequest, jsonResponse } from "@/lib/n8n-auth";
 
-const CandidateSchema = z.object({
-  candidate_name: z.string().min(1).max(200),
-  email: z.string().email().max(200).optional().nullable(),
-  phone: z.string().max(50).optional().nullable(),
-  experience: z.string().max(200).optional().nullable(),
-  skills: z.array(z.string().max(80)).max(100).optional(),
-  resume_url: z.string().url().max(2000).optional().nullable(),
-  notes: z.string().max(20000).optional().nullable(),
-  linked_job_id: z.string().uuid().optional().nullable(),
-  consultancy_id: z.string().uuid().optional().nullable(),
-  status: z
-    .enum(["submitted", "screening", "interview", "offer", "hired", "rejected"])
-    .optional(),
-});
+const StatusEnum = z.enum([
+  "submitted",
+  "screening",
+  "interview",
+  "offer",
+  "hired",
+  "rejected",
+]);
 
-const UpdateSchema = z.object({
-  id: z.string().uuid(),
-  status: z
-    .enum(["submitted", "screening", "interview", "offer", "hired", "rejected"])
-    .optional(),
-  notes: z.string().max(20000).optional(),
-});
+const CandidateSchema = z
+  .object({
+    candidate_name: z.string().trim().min(1).max(200),
+    email: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .email()
+      .max(200)
+      .optional()
+      .nullable(),
+    phone: z
+      .string()
+      .trim()
+      .min(3)
+      .max(50)
+      .regex(/^[+0-9()\-\s.]+$/, "Invalid phone characters")
+      .optional()
+      .nullable(),
+    experience: z.string().trim().max(200).optional().nullable(),
+    skills: z.array(z.string().trim().min(1).max(80)).max(100).optional(),
+    resume_url: z
+      .string()
+      .trim()
+      .url()
+      .max(2000)
+      .refine((u) => /^https?:\/\//i.test(u), "resume_url must be http(s)")
+      .optional()
+      .nullable(),
+    notes: z.string().trim().max(20000).optional().nullable(),
+    linked_job_id: z.string().uuid().optional().nullable(),
+    consultancy_id: z.string().uuid().optional().nullable(),
+    status: StatusEnum.optional(),
+  })
+  .strict();
+
+const UpdateSchema = z
+  .object({
+    id: z.string().uuid(),
+    status: StatusEnum.optional(),
+    notes: z.string().trim().max(20000).optional(),
+  })
+  .strict()
+  .refine(
+    (v) => v.status !== undefined || v.notes !== undefined,
+    { message: "At least one of `status` or `notes` is required" },
+  );
+
+const CandidatePayloadSchema = z.union([
+  CandidateSchema,
+  z.array(CandidateSchema).min(1).max(100),
+]);
+
+const MAX_BODY_BYTES = 256 * 1024; // 256 KB hard cap
+
+async function readJsonBody(request: Request): Promise<
+  { ok: true; value: unknown } | { ok: false; response: Response }
+> {
+  const ct = request.headers.get("content-type") ?? "";
+  if (!ct.toLowerCase().includes("application/json")) {
+    return {
+      ok: false,
+      response: jsonResponse(
+        { error: "Content-Type must be application/json" },
+        415,
+      ),
+    };
+  }
+  const len = Number(request.headers.get("content-length") ?? "0");
+  if (len && len > MAX_BODY_BYTES) {
+    return { ok: false, response: jsonResponse({ error: "Payload too large" }, 413) };
+  }
+  let text: string;
+  try {
+    text = await request.text();
+  } catch {
+    return { ok: false, response: jsonResponse({ error: "Unable to read body" }, 400) };
+  }
+  if (text.length > MAX_BODY_BYTES) {
+    return { ok: false, response: jsonResponse({ error: "Payload too large" }, 413) };
+  }
+  if (!text.trim()) {
+    return { ok: false, response: jsonResponse({ error: "Empty body" }, 400) };
+  }
+  try {
+    return { ok: true, value: JSON.parse(text) };
+  } catch {
+    return { ok: false, response: jsonResponse({ error: "Invalid JSON" }, 400) };
+  }
+}
+
 
 export const Route = createFileRoute("/api/public/n8n/candidates")({
   server: {
