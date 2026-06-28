@@ -224,7 +224,7 @@ function CandidateDialog({ onClose }: { onClose: () => void }) {
         resume_url = path;
       }
 
-      const { error } = await supabase.from("candidates").insert({
+      const { data: inserted, error } = await supabase.from("candidates").insert({
         candidate_name: form.candidate_name,
         email: form.email || null,
         phone: form.phone || null,
@@ -234,8 +234,9 @@ function CandidateDialog({ onClose }: { onClose: () => void }) {
         consultancy_id: consultancyId ?? null,
         resume_url,
         skills: form.skills.split(",").map((s) => s.trim()).filter(Boolean),
-      });
+      }).select("id, candidate_name, email, status, linked_job_id, consultancy_id").single();
       if (error) throw error;
+      void dispatchN8nEvent({ data: { event: "candidate.submitted", payload: inserted ?? {} } });
     },
     onSuccess: () => { toast.success("Candidate submitted"); qc.invalidateQueries({ queryKey: ["candidates"] }); onClose(); },
     onError: (e: Error) => toast.error(e.message),
