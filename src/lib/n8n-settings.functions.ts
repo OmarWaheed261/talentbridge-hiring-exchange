@@ -11,19 +11,21 @@ const UrlSchema = z
 const SecretSchema = z.string().min(8).max(512);
 
 
-async function assertAdmin(ctx: { supabase: any; userId: string }) {
+async function assertAdmin(ctx: { supabase: any; userId: unknown }) {
+  const userId = String(ctx.userId);
   const { data, error } = await ctx.supabase.rpc("has_role", {
-    _user_id: ctx.userId,
+    _user_id: userId,
     _role: "consultancy_admin",
   });
   if (error) throw new Error(error.message);
   if (data) return;
   const { data: isSuper } = await ctx.supabase.rpc("has_role", {
-    _user_id: ctx.userId,
+    _user_id: userId,
     _role: "super_admin",
   });
   if (!isSuper) throw new Error("Forbidden: admin role required");
 }
+
 
 function mask(secret: string | null | undefined) {
   if (!secret) return null;
