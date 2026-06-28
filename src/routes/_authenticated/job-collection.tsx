@@ -108,6 +108,7 @@ function JobCollectionPage() {
 
   const [selected, setSelected] = useState<CollectedJob | null>(null);
   const [live, setLive] = useState(true);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   // Main paginated query — applies all filters + sort + range on the server
   const { data: result, isLoading, refetch, isFetching } = useQuery({
