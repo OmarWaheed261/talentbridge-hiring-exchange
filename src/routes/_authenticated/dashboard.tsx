@@ -88,6 +88,58 @@ function Dashboard() {
     },
   });
 
+  const queryClient = useQueryClient();
+  const [isLive, setIsLive] = useState(false);
+
+  useEffect(() => {
+    const refresh = () => {
+      queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["recent-activity"] });
+    };
+
+    const channel = supabase
+      .channel("dashboard-realtime")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "jobs" },
+        (payload) => {
+          const row = payload.new as { job_title?: string; company_name?: string };
+          toast.success(`New job: ${row.job_title ?? "Untitled"}`, {
+            description: row.company_name ?? undefined,
+          });
+          refresh();
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "candidates" },
+        (payload) => {
+          const row = payload.new as { candidate_name?: string };
+          toast.success(`New candidate: ${row.candidate_name ?? "Unnamed"}`);
+          refresh();
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "candidates" },
+        (payload) => {
+          const oldRow = payload.old as { status?: string };
+          const newRow = payload.new as { candidate_name?: string; status?: string };
+          if (oldRow.status !== newRow.status) {
+            toast.message(`${newRow.candidate_name ?? "Candidate"} → ${newRow.status ?? ""}`);
+            refresh();
+          }
+        },
+      )
+      .subscribe((status) => {
+        setIsLive(status === "SUBSCRIBED");
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   return (
     <>
       <PageHeader
