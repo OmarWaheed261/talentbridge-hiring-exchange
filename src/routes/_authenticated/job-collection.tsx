@@ -5,7 +5,7 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import {
   Search, RefreshCw, Download, ExternalLink, Trash2, Zap, Filter, Radio,
-  ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, FileSpreadsheet, FileText,
+  ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight, FileSpreadsheet, FileText, History,
 } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
