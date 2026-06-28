@@ -1,0 +1,75 @@
+{
+  "name": "TalentBridge — Sync Open Jobs",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "minutes", "minutesInterval": 30 }] }
+      },
+      "id": "trigger-cron",
+      "name": "Every 30 min",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            { "name": "baseUrl", "value": "https://project--5b5c7bbd-89d9-4296-8b02-1ea4ca9062d7-dev.lovable.app" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-base-url",
+      "name": "Set Base URL",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{$json.baseUrl}}/api/public/n8n/jobs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": { "parameters": [{ "name": "limit", "value": "100" }] },
+        "options": { "response": { "response": { "fullResponse": false } } }
+      },
+      "id": "get-jobs",
+      "name": "GET /api/public/n8n/jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [700, 300],
+      "credentials": { "httpHeaderAuth": { "id": "REPLACE_WITH_CREDENTIAL_ID", "name": "TalentBridge n8n Secret" } }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "jobs",
+        "options": {}
+      },
+      "id": "split-jobs",
+      "name": "Split Jobs",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [940, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Map each job into a downstream-friendly shape.\n// Replace this with Slack, Google Sheets, Airtable, etc.\nreturn items.map(({ json }) => ({\n  json: {\n    id: json.id,\n    title: json.job_title,\n    company: json.company_name,\n    location: json.location,\n    url: json.job_url,\n    posted: json.posted_date,\n  },\n}));"
+      },
+      "id": "transform",
+      "name": "Shape for downstream",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1180, 300]
+    }
+  ],
+  "connections": {
+    "Every 30 min": { "main": [[{ "node": "Set Base URL", "type": "main", "index": 0 }]] },
+    "Set Base URL": { "main": [[{ "node": "GET /api/public/n8n/jobs", "type": "main", "index": 0 }]] },
+    "GET /api/public/n8n/jobs": { "main": [[{ "node": "Split Jobs", "type": "main", "index": 0 }]] },
+    "Split Jobs": { "main": [[{ "node": "Shape for downstream", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}

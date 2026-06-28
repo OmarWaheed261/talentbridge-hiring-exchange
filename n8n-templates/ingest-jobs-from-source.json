@@ -1,0 +1,76 @@
+{
+  "name": "TalentBridge — Ingest Jobs from External Source",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "hours", "hoursInterval": 1 }] }
+      },
+      "id": "trigger-cron",
+      "name": "Hourly",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            { "name": "baseUrl", "value": "https://project--5b5c7bbd-89d9-4296-8b02-1ea4ca9062d7-dev.lovable.app" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-base-url",
+      "name": "Set Base URL",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// === REPLACE: pull jobs from your real source ===\n// e.g. an HTTP Request to a job board, RSS feed, ATS API, Greenhouse, Lever.\n// Each output item must be ONE job object.\nreturn [\n  {\n    json: {\n      job_title: 'Senior React Engineer',\n      company_name: 'Acme Corp',\n      job_description: 'Build delightful UIs in React + TypeScript.',\n      job_url: 'https://example.com/jobs/123',\n      location: 'Remote (US)',\n      salary_range: '$160k - $200k',\n      source: 'example-board',\n      required_skills: ['React', 'TypeScript', 'GraphQL'],\n      employment_type: 'full_time',\n      experience_level: 'senior',\n      status: 'open',\n    },\n  },\n];"
+      },
+      "id": "fetch-source",
+      "name": "Fetch from Source (replace me)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [700, 300]
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemFields",
+        "options": {}
+      },
+      "id": "aggregate",
+      "name": "Batch into array",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [940, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$('Set Base URL').item.json.baseUrl}}/api/public/n8n/jobs",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.data) }}",
+        "options": {}
+      },
+      "id": "post-jobs",
+      "name": "POST /api/public/n8n/jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1180, 300],
+      "credentials": { "httpHeaderAuth": { "id": "REPLACE_WITH_CREDENTIAL_ID", "name": "TalentBridge n8n Secret" } }
+    }
+  ],
+  "connections": {
+    "Hourly": { "main": [[{ "node": "Set Base URL", "type": "main", "index": 0 }]] },
+    "Set Base URL": { "main": [[{ "node": "Fetch from Source (replace me)", "type": "main", "index": 0 }]] },
+    "Fetch from Source (replace me)": { "main": [[{ "node": "Batch into array", "type": "main", "index": 0 }]] },
+    "Batch into array": { "main": [[{ "node": "POST /api/public/n8n/jobs", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}
