@@ -16,6 +16,17 @@ import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
+  head: () => ({
+    meta: [
+      { title: "Recruitment Pipeline Dashboard — TalentBridge AI" },
+      {
+        name: "description",
+        content:
+          "Live overview of your recruitment pipeline: open roles, candidate submissions, interview funnel, and placement metrics.",
+      },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
 });
 
 const monthly = [
@@ -79,7 +90,8 @@ function Dashboard() {
   return (
     <>
       <PageHeader
-        title="Welcome back 👋"
+        title="Recruitment Pipeline Overview"
+
         description="Here's what's happening across your recruitment pipeline."
         actions={
           <Link to="/jobs">
