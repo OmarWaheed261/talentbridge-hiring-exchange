@@ -219,13 +219,26 @@ function CandidatesPage() {
     return params.dir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />;
   };
 
-  const SortableTh = ({ k, label }: { k: SortKey; label: string }) => (
-    <th className="p-3 font-semibold">
-      <button onClick={() => toggleSort(k)} className="inline-flex items-center gap-1.5 hover:text-foreground transition-base">
-        {label} {sortIcon(k)}
-      </button>
-    </th>
-  );
+  const SortableTh = ({ k, label }: { k: SortKey; label: string }) => {
+    const active = params.sort === k;
+    const ariaSort: "ascending" | "descending" | "none" = active
+      ? params.dir === "asc" ? "ascending" : "descending"
+      : "none";
+    return (
+      <th scope="col" aria-sort={ariaSort} className="p-3 font-semibold">
+        <button
+          type="button"
+          onClick={() => toggleSort(k)}
+          aria-label={`Sort by ${label}${
+            active ? ` (currently ${ariaSort}, click to ${params.dir === "asc" ? "sort descending" : "sort ascending"})` : ", not sorted"
+          }`}
+          className="inline-flex items-center gap-1.5 hover:text-foreground transition-base rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background px-1 -mx-1"
+        >
+          {label} {sortIcon(k)}
+        </button>
+      </th>
+    );
+  };
 
   return (
     <>
@@ -347,12 +360,20 @@ function CandidatesPage() {
 
           <TabsContent value="table" className="mt-6 space-y-4">
             <div className="glass rounded-2xl overflow-hidden shadow-card">
-              <table className="w-full text-sm">
+              <table
+                className="w-full text-sm"
+                aria-label="Candidates"
+                aria-rowcount={total}
+                aria-busy={tableLoading || tableFetching}
+              >
+                <caption className="sr-only">
+                  Candidates list. Use sort buttons in column headers to reorder. Page {params.page} of {pageCount}.
+                </caption>
                 <thead className="bg-muted/40">
                   <tr className="text-left">
                     <SortableTh k="candidate_name" label="Name" />
                     <SortableTh k="email" label="Email" />
-                    <th className="p-3 font-semibold">Skills</th>
+                    <th scope="col" className="p-3 font-semibold">Skills</th>
                     <SortableTh k="status" label="Status" />
                     <SortableTh k="created_at" label="Submitted" />
                   </tr>
@@ -362,17 +383,23 @@ function CandidatesPage() {
                     <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">Loading…</td></tr>
                   )}
                   {rows.map((c) => (
-                    <tr key={c.id} className="border-t border-border/60 hover:bg-muted/30 transition-base">
+                    <tr
+                      key={c.id}
+                      className="border-t border-border/60 hover:bg-muted/30 transition-base focus-within:bg-muted/30 focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-inset"
+                    >
                       <td className="p-3 font-medium">{c.candidate_name}</td>
                       <td className="p-3 text-muted-foreground">{c.email}</td>
                       <td className="p-3">
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-1" aria-label={c.skills.length ? `Skills: ${c.skills.join(", ")}` : "No skills listed"}>
                           {c.skills.slice(0, 3).map((s) => <Badge key={s} variant="outline" className="text-xs">{s}</Badge>)}
                         </div>
                       </td>
                       <td className="p-3">
                         <Select value={c.status} onValueChange={(v) => update.mutate({ id: c.id, status: v as Status })}>
-                          <SelectTrigger className={`h-7 text-xs w-[130px] capitalize ${statusStyles[c.status]}`}>
+                          <SelectTrigger
+                            aria-label={`Change status for ${c.candidate_name} (currently ${c.status})`}
+                            className={`h-7 text-xs w-[130px] capitalize focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${statusStyles[c.status]}`}
+                          >
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -395,8 +422,8 @@ function CandidatesPage() {
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between text-sm">
-              <div className="text-muted-foreground">
+            <nav aria-label="Candidates pagination" className="flex items-center justify-between text-sm">
+              <div className="text-muted-foreground" aria-live="polite" aria-atomic="true">
                 {total === 0 ? "0 results" : (
                   <>
                     Showing <span className="font-medium text-foreground">{(params.page - 1) * PAGE_SIZE + 1}</span>–
@@ -412,10 +439,12 @@ function CandidatesPage() {
                   size="sm"
                   disabled={params.page <= 1}
                   onClick={() => setParam("page", Math.max(1, params.page - 1))}
+                  aria-label={`Go to previous page (currently page ${params.page} of ${pageCount})`}
+                  className="focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
-                  <ChevronLeft className="h-4 w-4" /> Prev
+                  <ChevronLeft className="h-4 w-4" aria-hidden="true" /> Prev
                 </Button>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-muted-foreground" aria-hidden="true">
                   Page {params.page} of {pageCount}
                 </span>
                 <Button
@@ -423,11 +452,13 @@ function CandidatesPage() {
                   size="sm"
                   disabled={params.page >= pageCount}
                   onClick={() => setParam("page", Math.min(pageCount, params.page + 1))}
+                  aria-label={`Go to next page (currently page ${params.page} of ${pageCount})`}
+                  className="focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
-                  Next <ChevronRight className="h-4 w-4" />
+                  Next <ChevronRight className="h-4 w-4" aria-hidden="true" />
                 </Button>
               </div>
-            </div>
+            </nav>
           </TabsContent>
         </Tabs>
       </div>
