@@ -69,6 +69,11 @@ function SettingsPage() {
             </div>
           </TabsContent>
 
+          <TabsContent value="integrations" className="mt-6">
+            <N8nIntegrationCard />
+          </TabsContent>
+
+
           <TabsContent value="notifications" className="mt-6">
             <div className="glass rounded-2xl p-6 shadow-card space-y-4">
               {[
