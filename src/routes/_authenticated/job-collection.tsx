@@ -1,8 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
 import {
   Search, RefreshCw, Download, ExternalLink, Trash2, Zap, Filter, Radio,
+  ArrowUp, ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,7 +24,25 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 
+const SORTABLE = ["created_at", "posted_date", "company_name", "location", "source", "status", "job_title"] as const;
+type SortKey = (typeof SORTABLE)[number];
+
+const searchSchema = z.object({
+  q: fallback(z.string(), "").default(""),
+  status: fallback(z.enum(["all", "new", "processed", "shared"]), "all").default("all"),
+  source: fallback(z.string(), "all").default("all"),
+  company: fallback(z.string(), "all").default("all"),
+  location: fallback(z.string(), "all").default("all"),
+  skill: fallback(z.string(), "all").default("all"),
+  sort: fallback(z.enum(SORTABLE), "created_at").default("created_at"),
+  dir: fallback(z.enum(["asc", "desc"]), "desc").default("desc"),
+  page: fallback(z.number().int().min(1), 1).default(1),
+});
+
+const PAGE_SIZE = 25;
+
 export const Route = createFileRoute("/_authenticated/job-collection")({
+  validateSearch: zodValidator(searchSchema),
   component: JobCollectionPage,
   head: () => ({
     meta: [
@@ -60,26 +81,108 @@ function JobCollectionPage() {
   const qc = useQueryClient();
   const { roles } = useAuth();
   const isAdmin = roles.includes("super_admin");
+  const params = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
 
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [sourceFilter, setSourceFilter] = useState("all");
-  const [companyFilter, setCompanyFilter] = useState("all");
-  const [locationFilter, setLocationFilter] = useState("all");
-  const [skillFilter, setSkillFilter] = useState("all");
+  const setParam = <K extends keyof typeof params>(key: K, value: (typeof params)[K]) => {
+    navigate({ search: (prev) => ({ ...prev, [key]: value, page: key === "page" ? (value as number) : 1 }) });
+  };
+
+  // Debounce search input so we don't slam the DB on each keystroke
+  const [searchDraft, setSearchDraft] = useState(params.q);
+  useEffect(() => { setSearchDraft(params.q); }, [params.q]);
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (searchDraft !== params.q) setParam("q", searchDraft);
+    }, 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchDraft]);
+
   const [selected, setSelected] = useState<CollectedJob | null>(null);
   const [live, setLive] = useState(true);
 
-  const { data: jobs = [], isLoading, refetch, isFetching } = useQuery({
-    queryKey: ["collected_jobs"],
+  // Main paginated query — applies all filters + sort + range on the server
+  const { data: result, isLoading, refetch, isFetching } = useQuery({
+    queryKey: ["collected_jobs", params],
+    queryFn: async () => {
+      let q = supabase.from("collected_jobs").select("*", { count: "exact" });
+
+      if (params.status !== "all") q = q.eq("status", params.status);
+      if (params.source !== "all") q = q.eq("source", params.source);
+      if (params.company !== "all") q = q.eq("company_name", params.company);
+      if (params.location !== "all") q = q.eq("location", params.location);
+      if (params.skill !== "all") q = q.contains("skills", [params.skill]);
+
+      if (params.q.trim()) {
+        const term = params.q.trim().replace(/[%,]/g, "");
+        q = q.or(
+          `job_title.ilike.%${term}%,company_name.ilike.%${term}%,location.ilike.%${term}%`,
+        );
+      }
+
+      q = q.order(params.sort, { ascending: params.dir === "asc", nullsFirst: false });
+      if (params.sort !== "created_at") {
+        // tie-breaker for stable pagination
+        q = q.order("created_at", { ascending: false });
+      }
+
+      const from = (params.page - 1) * PAGE_SIZE;
+      q = q.range(from, from + PAGE_SIZE - 1);
+
+      const { data, error, count } = await q;
+      if (error) throw error;
+      return { rows: (data ?? []) as CollectedJob[], total: count ?? 0 };
+    },
+    placeholderData: (prev) => prev,
+  });
+
+  const jobs = result?.rows ?? [];
+  const total = result?.total ?? 0;
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  // Distinct values for filter dropdowns (separate small queries; cached longer)
+  const { data: facets } = useQuery({
+    queryKey: ["collected_jobs_facets"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("collected_jobs")
-        .select("*")
-        .order("created_at", { ascending: false });
+        .select("company_name, location, source, skills")
+        .limit(2000);
       if (error) throw error;
-      return data as CollectedJob[];
+      const companies = new Set<string>();
+      const locations = new Set<string>();
+      const sources = new Set<string>();
+      const skills = new Set<string>();
+      for (const r of data ?? []) {
+        if (r.company_name) companies.add(r.company_name);
+        if (r.location) locations.add(r.location);
+        if (r.source) sources.add(r.source);
+        for (const s of (r.skills ?? []) as string[]) skills.add(s);
+      }
+      return {
+        companies: [...companies].sort(),
+        locations: [...locations].sort(),
+        sources: [...sources].sort(),
+        skills: [...skills].sort().slice(0, 200),
+      };
     },
+    staleTime: 60_000,
+  });
+
+  // Status counts for stat cards (lightweight head queries)
+  const { data: counts } = useQuery({
+    queryKey: ["collected_jobs_counts"],
+    queryFn: async () => {
+      const make = (status?: string) => {
+        let q = supabase.from("collected_jobs").select("id", { count: "exact", head: true });
+        if (status) q = q.eq("status", status);
+        return q;
+      };
+      const [all, n, p, s] = await Promise.all([make(), make("new"), make("processed"), make("shared")]);
+      return { total: all.count ?? 0, new: n.count ?? 0, processed: p.count ?? 0, shared: s.count ?? 0 };
+    },
+    staleTime: 30_000,
   });
 
   // Realtime subscription
@@ -96,6 +199,8 @@ function JobCollectionPage() {
             description: row.company_name ?? undefined,
           });
           qc.invalidateQueries({ queryKey: ["collected_jobs"] });
+          qc.invalidateQueries({ queryKey: ["collected_jobs_counts"] });
+          qc.invalidateQueries({ queryKey: ["collected_jobs_facets"] });
         },
       )
       .on(
@@ -108,12 +213,16 @@ function JobCollectionPage() {
             toast.message(`${newRow.job_title ?? "Job"} → ${newRow.status ?? ""}`);
           }
           qc.invalidateQueries({ queryKey: ["collected_jobs"] });
+          qc.invalidateQueries({ queryKey: ["collected_jobs_counts"] });
         },
       )
       .on(
         "postgres_changes",
         { event: "DELETE", schema: "public", table: "collected_jobs" },
-        () => qc.invalidateQueries({ queryKey: ["collected_jobs"] }),
+        () => {
+          qc.invalidateQueries({ queryKey: ["collected_jobs"] });
+          qc.invalidateQueries({ queryKey: ["collected_jobs_counts"] });
+        },
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -145,16 +254,21 @@ function JobCollectionPage() {
 
   const clearDuplicates = useMutation({
     mutationFn: async () => {
+      const { data, error } = await supabase
+        .from("collected_jobs")
+        .select("id, job_url, job_title, company_name, created_at")
+        .order("created_at", { ascending: true });
+      if (error) throw error;
       const seen = new Map<string, string>();
       const toDelete: string[] = [];
-      for (const j of jobs) {
+      for (const j of data ?? []) {
         const key = (j.job_url ?? `${j.job_title}|${j.company_name}`).toLowerCase();
         if (seen.has(key)) toDelete.push(j.id);
         else seen.set(key, j.id);
       }
       if (toDelete.length === 0) return 0;
-      const { error } = await supabase.from("collected_jobs").delete().in("id", toDelete);
-      if (error) throw error;
+      const { error: delErr } = await supabase.from("collected_jobs").delete().in("id", toDelete);
+      if (delErr) throw delErr;
       return toDelete.length;
     },
     onSuccess: (n) => {
@@ -164,51 +278,10 @@ function JobCollectionPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const companies = useMemo(
-    () => Array.from(new Set(jobs.map((j) => j.company_name).filter(Boolean))).sort(),
-    [jobs],
-  );
-  const locations = useMemo(
-    () => Array.from(new Set(jobs.map((j) => j.location).filter((x): x is string => !!x))).sort(),
-    [jobs],
-  );
-  const sources = useMemo(
-    () => Array.from(new Set(jobs.map((j) => j.source).filter((x): x is string => !!x))).sort(),
-    [jobs],
-  );
-  const allSkills = useMemo(
-    () => Array.from(new Set(jobs.flatMap((j) => j.skills ?? []))).sort(),
-    [jobs],
-  );
-
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return jobs.filter((j) => {
-      if (statusFilter !== "all" && j.status !== statusFilter) return false;
-      if (sourceFilter !== "all" && j.source !== sourceFilter) return false;
-      if (companyFilter !== "all" && j.company_name !== companyFilter) return false;
-      if (locationFilter !== "all" && j.location !== locationFilter) return false;
-      if (skillFilter !== "all" && !(j.skills ?? []).includes(skillFilter)) return false;
-      if (!q) return true;
-      return (
-        j.job_title.toLowerCase().includes(q) ||
-        j.company_name.toLowerCase().includes(q) ||
-        (j.location ?? "").toLowerCase().includes(q) ||
-        (j.skills ?? []).some((s) => s.toLowerCase().includes(q))
-      );
-    });
-  }, [jobs, search, statusFilter, sourceFilter, companyFilter, locationFilter, skillFilter]);
-
-  const counts = useMemo(() => {
-    const c = { new: 0, processed: 0, shared: 0 };
-    jobs.forEach((j) => { c[j.status]++; });
-    return c;
-  }, [jobs]);
-
   const exportCsv = () => {
     const header = ["job_title","company_name","location","skills","source","job_url","posted_date","status","created_at"];
     const lines = [header.join(",")];
-    for (const j of filtered) {
+    for (const j of jobs) {
       const row = [
         j.job_title, j.company_name, j.location ?? "", (j.skills ?? []).join("|"),
         j.source ?? "", j.job_url ?? "", j.posted_date ?? "", j.status, j.created_at,
@@ -227,7 +300,6 @@ function JobCollectionPage() {
   const triggerSync = async () => {
     toast.info("Triggering manual sync…");
     try {
-      // Dev test: insert a synthetic job to validate the ingest path
       const { error } = await supabase.from("collected_jobs").insert({
         job_title: "Manual Sync Test Job",
         company_name: "Apify Test",
@@ -245,6 +317,19 @@ function JobCollectionPage() {
     }
   };
 
+  const toggleSort = (key: SortKey) => {
+    if (params.sort === key) {
+      navigate({ search: (prev) => ({ ...prev, dir: prev.dir === "asc" ? "desc" : "asc", page: 1 }) });
+    } else {
+      navigate({ search: (prev) => ({ ...prev, sort: key, dir: "desc", page: 1 }) });
+    }
+  };
+
+  const sortIcon = (key: SortKey) => {
+    if (params.sort !== key) return <ArrowUpDown className="h-3 w-3 opacity-40" />;
+    return params.dir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />;
+  };
+
   return (
     <>
       <PageHeader
@@ -258,7 +343,7 @@ function JobCollectionPage() {
             </Button>
             <Button variant="outline" size="sm" onClick={exportCsv}>
               <Download className="h-4 w-4 mr-2" />
-              Export CSV
+              Export page
             </Button>
             {isAdmin && (
               <>
@@ -280,10 +365,10 @@ function JobCollectionPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Total collected", value: jobs.length, accent: "from-primary/20 to-primary/5" },
-            { label: "New", value: counts.new, accent: "from-blue-500/20 to-blue-500/5" },
-            { label: "Processed", value: counts.processed, accent: "from-amber-500/20 to-amber-500/5" },
-            { label: "Shared", value: counts.shared, accent: "from-emerald-500/20 to-emerald-500/5" },
+            { label: "Total collected", value: counts?.total ?? 0, accent: "from-primary/20 to-primary/5" },
+            { label: "New", value: counts?.new ?? 0, accent: "from-blue-500/20 to-blue-500/5" },
+            { label: "Processed", value: counts?.processed ?? 0, accent: "from-amber-500/20 to-amber-500/5" },
+            { label: "Shared", value: counts?.shared ?? 0, accent: "from-emerald-500/20 to-emerald-500/5" },
           ].map((s) => (
             <div key={s.label}
               className={`rounded-xl border border-border/60 bg-gradient-to-br ${s.accent} p-5 backdrop-blur transition-base hover:shadow-md`}>
@@ -299,9 +384,9 @@ function JobCollectionPage() {
             <div className="relative flex-1 min-w-[220px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search title, company, skill, location…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search title, company, location…"
+                value={searchDraft}
+                onChange={(e) => setSearchDraft(e.target.value)}
                 className="pl-9"
               />
             </div>
@@ -318,16 +403,23 @@ function JobCollectionPage() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
-            <FilterSelect value={statusFilter} onChange={setStatusFilter} label="Status"
+            <FilterSelect value={params.status} onChange={(v) => setParam("status", v as typeof params.status)} label="Status"
               options={[{ value: "all", label: "All status" }, { value: "new", label: "New" }, { value: "processed", label: "Processed" }, { value: "shared", label: "Shared" }]} />
-            <FilterSelect value={sourceFilter} onChange={setSourceFilter} label="Source"
-              options={[{ value: "all", label: "All sources" }, ...sources.map((s) => ({ value: s, label: s }))]} />
-            <FilterSelect value={companyFilter} onChange={setCompanyFilter} label="Company"
-              options={[{ value: "all", label: "All companies" }, ...companies.map((s) => ({ value: s, label: s }))]} />
-            <FilterSelect value={locationFilter} onChange={setLocationFilter} label="Location"
-              options={[{ value: "all", label: "All locations" }, ...locations.map((s) => ({ value: s, label: s }))]} />
-            <FilterSelect value={skillFilter} onChange={setSkillFilter} label="Skill"
-              options={[{ value: "all", label: "All skills" }, ...allSkills.slice(0, 200).map((s) => ({ value: s, label: s }))]} />
+            <FilterSelect value={params.source} onChange={(v) => setParam("source", v)} label="Source"
+              options={[{ value: "all", label: "All sources" }, ...(facets?.sources ?? []).map((s) => ({ value: s, label: s }))]} />
+            <FilterSelect value={params.company} onChange={(v) => setParam("company", v)} label="Company"
+              options={[{ value: "all", label: "All companies" }, ...(facets?.companies ?? []).map((s) => ({ value: s, label: s }))]} />
+            <FilterSelect value={params.location} onChange={(v) => setParam("location", v)} label="Location"
+              options={[{ value: "all", label: "All locations" }, ...(facets?.locations ?? []).map((s) => ({ value: s, label: s }))]} />
+            <FilterSelect value={params.skill} onChange={(v) => setParam("skill", v)} label="Skill"
+              options={[{ value: "all", label: "All skills" }, ...(facets?.skills ?? []).map((s) => ({ value: s, label: s }))]} />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate({ search: () => ({ q: "", status: "all", source: "all", company: "all", location: "all", skill: "all", sort: "created_at", dir: "desc", page: 1 }) })}
+            >
+              Reset
+            </Button>
           </div>
         </div>
 
@@ -337,13 +429,13 @@ function JobCollectionPage() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/40">
-                  <TableHead>Job Title</TableHead>
-                  <TableHead>Company</TableHead>
-                  <TableHead>Location</TableHead>
+                  <SortHead label="Job Title" k="job_title" sortKey={params.sort} icon={sortIcon} onClick={toggleSort} />
+                  <SortHead label="Company" k="company_name" sortKey={params.sort} icon={sortIcon} onClick={toggleSort} />
+                  <SortHead label="Location" k="location" sortKey={params.sort} icon={sortIcon} onClick={toggleSort} />
                   <TableHead>Skills</TableHead>
-                  <TableHead>Source</TableHead>
-                  <TableHead>Posted</TableHead>
-                  <TableHead>Status</TableHead>
+                  <SortHead label="Source" k="source" sortKey={params.sort} icon={sortIcon} onClick={toggleSort} />
+                  <SortHead label="Posted" k="posted_date" sortKey={params.sort} icon={sortIcon} onClick={toggleSort} />
+                  <SortHead label="Status" k="status" sortKey={params.sort} icon={sortIcon} onClick={toggleSort} />
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -351,12 +443,12 @@ function JobCollectionPage() {
                 {isLoading && (
                   <TableRow><TableCell colSpan={8} className="text-center py-10 text-muted-foreground">Loading…</TableCell></TableRow>
                 )}
-                {!isLoading && filtered.length === 0 && (
+                {!isLoading && jobs.length === 0 && (
                   <TableRow><TableCell colSpan={8} className="text-center py-10 text-muted-foreground">
-                    No jobs yet. Configure your Apify actor to POST to <code className="px-1.5 py-0.5 rounded bg-muted text-xs">/api/public/n8n/collected-jobs</code>.
+                    No jobs match the current filters.
                   </TableCell></TableRow>
                 )}
-                {filtered.map((j) => (
+                {jobs.map((j) => (
                   <TableRow key={j.id} className="cursor-pointer hover:bg-muted/30 transition-base" onClick={() => setSelected(j)}>
                     <TableCell className="font-medium max-w-[280px] truncate">{j.job_title}</TableCell>
                     <TableCell className="text-muted-foreground">{j.company_name}</TableCell>
@@ -395,6 +487,37 @@ function JobCollectionPage() {
                 ))}
               </TableBody>
             </Table>
+          </div>
+
+          {/* Pagination */}
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border/60 text-sm">
+            <div className="text-muted-foreground">
+              {total === 0
+                ? "0 results"
+                : `Showing ${(params.page - 1) * PAGE_SIZE + 1}–${Math.min(params.page * PAGE_SIZE, total)} of ${total}`}
+              {isFetching && <span className="ml-2 text-xs">· updating…</span>}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={params.page <= 1}
+                onClick={() => setParam("page", params.page - 1)}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                Page {params.page} of {pageCount}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={params.page >= pageCount}
+                onClick={() => setParam("page", params.page + 1)}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -454,6 +577,30 @@ function JobCollectionPage() {
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+function SortHead({
+  label, k, sortKey, icon, onClick,
+}: {
+  label: string;
+  k: SortKey;
+  sortKey: SortKey;
+  icon: (k: SortKey) => React.ReactNode;
+  onClick: (k: SortKey) => void;
+}) {
+  return (
+    <TableHead>
+      <button
+        onClick={() => onClick(k)}
+        className={`inline-flex items-center gap-1.5 hover:text-foreground transition-base ${
+          sortKey === k ? "text-foreground font-medium" : ""
+        }`}
+      >
+        {label}
+        {icon(k)}
+      </button>
+    </TableHead>
   );
 }
 
