@@ -5,6 +5,17 @@ import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/_authenticated/automation")({
   component: AutomationPage,
+  head: () => ({
+    meta: [
+      { title: "Automation Center — TalentBridge AI" },
+      {
+        name: "description",
+        content:
+          "Visual n8n-powered workflows for job discovery, candidate submission, and interview scheduling across your recruitment pipeline.",
+      },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
 });
 
 const flows = [

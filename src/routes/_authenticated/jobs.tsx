@@ -20,6 +20,17 @@ import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/_authenticated/jobs")({
   component: JobsPage,
+  head: () => ({
+    meta: [
+      { title: "Open Jobs — TalentBridge AI" },
+      {
+        name: "description",
+        content:
+          "Browse and manage all open positions across client companies, with filters for employment type, experience level, and skills.",
+      },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
 });
 
 type Job = {
@@ -146,6 +157,8 @@ function JobsPage() {
                   </div>
                   {canManage && (
                     <button
+                      type="button"
+                      aria-label={`Delete job: ${j.job_title}`}
                       onClick={(e) => { e.preventDefault(); if (confirm("Delete this job?")) del.mutate(j.id); }}
                       className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-base p-1"
                     >
