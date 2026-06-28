@@ -84,7 +84,8 @@ export function SavedViewsBar<P extends Record<string, unknown>>({
           user_id: user.id,
           page_key: pageKey,
           name: input.name.trim(),
-          params: currentParams as unknown as Record<string, unknown>,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          params: currentParams as any,
           is_default: input.isDefault,
         },
         { onConflict: "user_id,page_key,name" },
