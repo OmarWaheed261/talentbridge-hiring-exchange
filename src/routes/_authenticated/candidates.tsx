@@ -177,6 +177,7 @@ function CandidateDialog({ onClose }: { onClose: () => void }) {
     candidate_name: "", email: "", phone: "", experience: "",
     skills: "", notes: "", linked_job_id: "",
   });
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
 
   const { data: jobs = [] } = useQuery({
     queryKey: ["jobs-list"],
@@ -188,6 +189,32 @@ function CandidateDialog({ onClose }: { onClose: () => void }) {
 
   const create = useMutation({
     mutationFn: async () => {
+      const consultancyId = profile?.consultancy_id;
+      let resume_url: string | null = null;
+
+      if (resumeFile) {
+        if (!consultancyId) {
+          throw new Error("You must belong to a consultancy to upload resumes.");
+        }
+        const ext = resumeFile.name.includes(".")
+          ? resumeFile.name.slice(resumeFile.name.lastIndexOf("."))
+          : "";
+        const safeBase = resumeFile.name
+          .replace(ext, "")
+          .replace(/[^a-zA-Z0-9-_]+/g, "_")
+          .slice(0, 60) || "resume";
+        // RLS requires the first path segment to equal the uploader's consultancy id.
+        const path = `${consultancyId}/${crypto.randomUUID()}-${safeBase}${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from("resumes")
+          .upload(path, resumeFile, {
+            contentType: resumeFile.type || "application/octet-stream",
+            upsert: false,
+          });
+        if (upErr) throw upErr;
+        resume_url = path;
+      }
+
       const { error } = await supabase.from("candidates").insert({
         candidate_name: form.candidate_name,
         email: form.email || null,
@@ -195,7 +222,8 @@ function CandidateDialog({ onClose }: { onClose: () => void }) {
         experience: form.experience || null,
         notes: form.notes || null,
         linked_job_id: form.linked_job_id || null,
-        consultancy_id: profile?.consultancy_id ?? null,
+        consultancy_id: consultancyId ?? null,
+        resume_url,
         skills: form.skills.split(",").map((s) => s.trim()).filter(Boolean),
       });
       if (error) throw error;
@@ -220,14 +248,27 @@ function CandidateDialog({ onClose }: { onClose: () => void }) {
             <SelectContent>{jobs.map((j) => <SelectItem key={j.id} value={j.id}>{j.job_title}</SelectItem>)}</SelectContent>
           </Select>
         </div>
+        <div className="col-span-2">
+          <Label>Resume (PDF / DOC)</Label>
+          <Input
+            type="file"
+            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            onChange={(e) => setResumeFile(e.target.files?.[0] ?? null)}
+            className="mt-1.5"
+          />
+          {!profile?.consultancy_id && (
+            <p className="mt-1 text-xs text-muted-foreground">Join a consultancy to upload resumes.</p>
+          )}
+        </div>
         <div className="col-span-2"><Label>Notes</Label><Textarea rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="mt-1.5" /></div>
       </div>
       <DialogFooter>
         <Button variant="ghost" onClick={onClose}>Cancel</Button>
-        <Button disabled={!form.candidate_name || create.isPending} onClick={() => create.mutate()} className="bg-gradient-primary text-primary-foreground">
+        <Button disabled={!form.candidate_name || create.isPending || (!!resumeFile && !profile?.consultancy_id)} onClick={() => create.mutate()} className="bg-gradient-primary text-primary-foreground">
           {create.isPending ? "Submitting…" : "Submit"}
         </Button>
       </DialogFooter>
     </DialogContent>
   );
 }
+
