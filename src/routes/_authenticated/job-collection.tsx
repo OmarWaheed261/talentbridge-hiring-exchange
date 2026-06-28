@@ -786,6 +786,7 @@ function JobCollectionPage() {
           )}
         </DialogContent>
       </Dialog>
+      <ExportHistoryDialog open={historyOpen} onOpenChange={setHistoryOpen} pageKey="job-collection" />
     </>
   );
 }
