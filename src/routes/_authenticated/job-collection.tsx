@@ -536,6 +536,13 @@ function JobCollectionPage() {
             >
               Reset
             </Button>
+            <div className="ml-auto">
+              <SavedViewsBar
+                pageKey="job-collection"
+                currentParams={params}
+                onApply={(p) => navigate({ search: () => ({ ...p, page: 1 }) })}
+              />
+            </div>
           </div>
         </div>
 
