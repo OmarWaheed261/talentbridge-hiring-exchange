@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { jsonResponse } from "@/lib/n8n-auth";
-import syncOpenJobs from "../../../../../../n8n-templates/sync-open-jobs.json";
-import ingestJobs from "../../../../../../n8n-templates/ingest-jobs-from-source.json";
-import ingestCandidate from "../../../../../../n8n-templates/ingest-candidate-submission.json";
-import updateCandidate from "../../../../../../n8n-templates/update-candidate-status.json";
+import syncOpenJobs from "../../../../../n8n-templates/sync-open-jobs.json";
+import ingestJobs from "../../../../../n8n-templates/ingest-jobs-from-source.json";
+import ingestCandidate from "../../../../../n8n-templates/ingest-candidate-submission.json";
+import updateCandidate from "../../../../../n8n-templates/update-candidate-status.json";
 
 const templates: Record<string, unknown> = {
   "sync-open-jobs": syncOpenJobs,
