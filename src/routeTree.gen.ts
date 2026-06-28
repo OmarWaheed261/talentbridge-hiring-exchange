@@ -23,6 +23,10 @@ import { Route as AuthenticatedConsultanciesRouteImport } from './routes/_authen
 import { Route as AuthenticatedCandidatesRouteImport } from './routes/_authenticated/candidates'
 import { Route as AuthenticatedAutomationRouteImport } from './routes/_authenticated/automation'
 import { Route as AuthenticatedJobsJobIdRouteImport } from './routes/_authenticated/jobs.$jobId'
+import { Route as ApiPublicN8nNotifyRouteImport } from './routes/api/public/n8n/notify'
+import { Route as ApiPublicN8nJobsRouteImport } from './routes/api/public/n8n/jobs'
+import { Route as ApiPublicN8nHealthRouteImport } from './routes/api/public/n8n/health'
+import { Route as ApiPublicN8nCandidatesRouteImport } from './routes/api/public/n8n/candidates'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -95,6 +99,26 @@ const AuthenticatedJobsJobIdRoute = AuthenticatedJobsJobIdRouteImport.update({
   path: '/$jobId',
   getParentRoute: () => AuthenticatedJobsRoute,
 } as any)
+const ApiPublicN8nNotifyRoute = ApiPublicN8nNotifyRouteImport.update({
+  id: '/api/public/n8n/notify',
+  path: '/api/public/n8n/notify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicN8nJobsRoute = ApiPublicN8nJobsRouteImport.update({
+  id: '/api/public/n8n/jobs',
+  path: '/api/public/n8n/jobs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicN8nHealthRoute = ApiPublicN8nHealthRouteImport.update({
+  id: '/api/public/n8n/health',
+  path: '/api/public/n8n/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicN8nCandidatesRoute = ApiPublicN8nCandidatesRouteImport.update({
+  id: '/api/public/n8n/candidates',
+  path: '/api/public/n8n/candidates',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -110,6 +134,10 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
+  '/api/public/n8n/candidates': typeof ApiPublicN8nCandidatesRoute
+  '/api/public/n8n/health': typeof ApiPublicN8nHealthRoute
+  '/api/public/n8n/jobs': typeof ApiPublicN8nJobsRoute
+  '/api/public/n8n/notify': typeof ApiPublicN8nNotifyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -125,6 +153,10 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
+  '/api/public/n8n/candidates': typeof ApiPublicN8nCandidatesRoute
+  '/api/public/n8n/health': typeof ApiPublicN8nHealthRoute
+  '/api/public/n8n/jobs': typeof ApiPublicN8nJobsRoute
+  '/api/public/n8n/notify': typeof ApiPublicN8nNotifyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -142,6 +174,10 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
+  '/api/public/n8n/candidates': typeof ApiPublicN8nCandidatesRoute
+  '/api/public/n8n/health': typeof ApiPublicN8nHealthRoute
+  '/api/public/n8n/jobs': typeof ApiPublicN8nJobsRoute
+  '/api/public/n8n/notify': typeof ApiPublicN8nNotifyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -159,6 +195,10 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/jobs/$jobId'
+    | '/api/public/n8n/candidates'
+    | '/api/public/n8n/health'
+    | '/api/public/n8n/jobs'
+    | '/api/public/n8n/notify'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -174,6 +214,10 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/jobs/$jobId'
+    | '/api/public/n8n/candidates'
+    | '/api/public/n8n/health'
+    | '/api/public/n8n/jobs'
+    | '/api/public/n8n/notify'
   id:
     | '__root__'
     | '/'
@@ -190,6 +234,10 @@ export interface FileRouteTypes {
     | '/_authenticated/reports'
     | '/_authenticated/settings'
     | '/_authenticated/jobs/$jobId'
+    | '/api/public/n8n/candidates'
+    | '/api/public/n8n/health'
+    | '/api/public/n8n/jobs'
+    | '/api/public/n8n/notify'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -198,6 +246,10 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiPublicN8nCandidatesRoute: typeof ApiPublicN8nCandidatesRoute
+  ApiPublicN8nHealthRoute: typeof ApiPublicN8nHealthRoute
+  ApiPublicN8nJobsRoute: typeof ApiPublicN8nJobsRoute
+  ApiPublicN8nNotifyRoute: typeof ApiPublicN8nNotifyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -300,6 +352,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedJobsJobIdRouteImport
       parentRoute: typeof AuthenticatedJobsRoute
     }
+    '/api/public/n8n/notify': {
+      id: '/api/public/n8n/notify'
+      path: '/api/public/n8n/notify'
+      fullPath: '/api/public/n8n/notify'
+      preLoaderRoute: typeof ApiPublicN8nNotifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/n8n/jobs': {
+      id: '/api/public/n8n/jobs'
+      path: '/api/public/n8n/jobs'
+      fullPath: '/api/public/n8n/jobs'
+      preLoaderRoute: typeof ApiPublicN8nJobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/n8n/health': {
+      id: '/api/public/n8n/health'
+      path: '/api/public/n8n/health'
+      fullPath: '/api/public/n8n/health'
+      preLoaderRoute: typeof ApiPublicN8nHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/n8n/candidates': {
+      id: '/api/public/n8n/candidates'
+      path: '/api/public/n8n/candidates'
+      fullPath: '/api/public/n8n/candidates'
+      preLoaderRoute: typeof ApiPublicN8nCandidatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -345,6 +425,10 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiPublicN8nCandidatesRoute: ApiPublicN8nCandidatesRoute,
+  ApiPublicN8nHealthRoute: ApiPublicN8nHealthRoute,
+  ApiPublicN8nJobsRoute: ApiPublicN8nJobsRoute,
+  ApiPublicN8nNotifyRoute: ApiPublicN8nNotifyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
