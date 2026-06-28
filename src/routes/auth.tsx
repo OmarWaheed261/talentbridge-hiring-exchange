@@ -73,7 +73,8 @@ function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <main className="min-h-screen flex">
+
       {/* Left: hero panel */}
       <div className="hidden lg:flex w-1/2 bg-gradient-hero text-primary-foreground p-12 flex-col justify-between relative overflow-hidden">
         <div className="absolute inset-0 opacity-30" style={{ background: "radial-gradient(circle at 20% 30%, white 0%, transparent 40%), radial-gradient(circle at 80% 70%, white 0%, transparent 35%)" }} />
@@ -163,6 +164,7 @@ function AuthPage() {
           </Tabs>
         </div>
       </div>
-    </div>
+    </main>
   );
+
 }

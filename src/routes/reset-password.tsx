@@ -9,6 +9,15 @@ import { Label } from "@/components/ui/label";
 export const Route = createFileRoute("/reset-password")({
   ssr: false,
   component: ResetPasswordPage,
+  head: () => ({
+    meta: [
+      { title: "Reset Password — TalentBridge AI" },
+      { name: "description", content: "Set a new password for your TalentBridge AI account." },
+      { name: "robots", content: "noindex, follow" },
+      { property: "og:url", content: "https://talentbridge-pro-hub.lovable.app/reset-password" },
+    ],
+    links: [{ rel: "canonical", href: "https://talentbridge-pro-hub.lovable.app/reset-password" }],
+  }),
 });
 
 function ResetPasswordPage() {
