@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { recordAuditEvent } from "@/lib/audit-log.functions";
 
 export type AppRole = "super_admin" | "consultancy_admin" | "consultancy_recruiter";
 
@@ -40,13 +41,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s);
       if (s?.user) {
         setTimeout(() => loadProfile(s.user.id), 0);
       } else {
         setProfile(null);
         setRoles([]);
+      }
+      if (event === "SIGNED_IN") {
+        void recordAuditEvent({
+          data: { event_type: "auth", action: "user.signin", status: "success", metadata: {} },
+        }).catch(() => {});
       }
     });
     supabase.auth.getSession().then(({ data }) => {
@@ -63,7 +69,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     profile,
     roles,
     loading,
-    signOut: async () => { await supabase.auth.signOut(); },
+    signOut: async () => {
+      try {
+        await recordAuditEvent({
+          data: { event_type: "auth", action: "user.signout", status: "success", metadata: {} },
+        });
+      } catch { /* best-effort */ }
+      await supabase.auth.signOut();
+    },
     refresh: async () => { if (session?.user) await loadProfile(session.user.id); },
   };
 

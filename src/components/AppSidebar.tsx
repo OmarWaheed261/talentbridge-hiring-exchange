@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Briefcase, Users, Building2, Workflow, Bell,
-  BarChart3, Settings, Sparkles, LogOut, Search, Radar,
+  BarChart3, Settings, Sparkles, LogOut, Search, Radar, ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useNavigate } from "@tanstack/react-router";
@@ -17,6 +17,7 @@ const nav = [
   { to: "/automation", label: "Automation Center", icon: Workflow },
   { to: "/notifications", label: "Notifications", icon: Bell },
   { to: "/reports", label: "Reports", icon: BarChart3 },
+  { to: "/audit-log", label: "Audit Log", icon: ShieldCheck, requiresRole: "super_admin" as const },
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
@@ -50,6 +51,7 @@ export function AppSidebar() {
 
       <nav className="px-3 mt-4 flex-1 space-y-0.5 overflow-y-auto">
         {nav.map((item) => {
+          if ("requiresRole" in item && item.requiresRole && !roles.includes(item.requiresRole)) return null;
           const active = pathname.startsWith(item.to);
           const Icon = item.icon;
           return (
