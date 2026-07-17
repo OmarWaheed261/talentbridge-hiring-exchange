@@ -22,12 +22,14 @@ import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
 import { Route as AuthenticatedJobCollectionRouteImport } from './routes/_authenticated/job-collection'
+import { Route as AuthenticatedHealthRouteImport } from './routes/_authenticated/health'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedConsultanciesRouteImport } from './routes/_authenticated/consultancies'
 import { Route as AuthenticatedCandidatesRouteImport } from './routes/_authenticated/candidates'
 import { Route as AuthenticatedAutomationRouteImport } from './routes/_authenticated/automation'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
+import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as AuthenticatedJobsJobIdRouteImport } from './routes/_authenticated/jobs.$jobId'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
@@ -106,6 +108,11 @@ const AuthenticatedJobCollectionRoute =
     path: '/job-collection',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHealthRoute = AuthenticatedHealthRouteImport.update({
+  id: '/health',
+  path: '/health',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -139,6 +146,11 @@ const Char91DotmcpChar93ListToolsRoute =
     path: '/.mcp/list-tools',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
+  id: '/api/public/health',
+  path: '/api/public/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedJobsJobIdRoute = AuthenticatedJobsJobIdRouteImport.update({
   id: '/$jobId',
   path: '/$jobId',
@@ -212,6 +224,7 @@ export interface FileRoutesByFullPath {
   '/candidates': typeof AuthenticatedCandidatesRoute
   '/consultancies': typeof AuthenticatedConsultanciesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/health': typeof AuthenticatedHealthRoute
   '/job-collection': typeof AuthenticatedJobCollectionRoute
   '/jobs': typeof AuthenticatedJobsRouteWithChildren
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -221,6 +234,7 @@ export interface FileRoutesByFullPath {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/n8n/candidates': typeof ApiPublicN8nCandidatesRoute
   '/api/public/n8n/collected-jobs': typeof ApiPublicN8nCollectedJobsRoute
   '/api/public/n8n/export-jobs': typeof ApiPublicN8nExportJobsRoute
@@ -243,6 +257,7 @@ export interface FileRoutesByTo {
   '/candidates': typeof AuthenticatedCandidatesRoute
   '/consultancies': typeof AuthenticatedConsultanciesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/health': typeof AuthenticatedHealthRoute
   '/job-collection': typeof AuthenticatedJobCollectionRoute
   '/jobs': typeof AuthenticatedJobsRouteWithChildren
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -252,6 +267,7 @@ export interface FileRoutesByTo {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/n8n/candidates': typeof ApiPublicN8nCandidatesRoute
   '/api/public/n8n/collected-jobs': typeof ApiPublicN8nCollectedJobsRoute
   '/api/public/n8n/export-jobs': typeof ApiPublicN8nExportJobsRoute
@@ -276,6 +292,7 @@ export interface FileRoutesById {
   '/_authenticated/candidates': typeof AuthenticatedCandidatesRoute
   '/_authenticated/consultancies': typeof AuthenticatedConsultanciesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/health': typeof AuthenticatedHealthRoute
   '/_authenticated/job-collection': typeof AuthenticatedJobCollectionRoute
   '/_authenticated/jobs': typeof AuthenticatedJobsRouteWithChildren
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
@@ -285,6 +302,7 @@ export interface FileRoutesById {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/jobs/$jobId': typeof AuthenticatedJobsJobIdRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/n8n/candidates': typeof ApiPublicN8nCandidatesRoute
   '/api/public/n8n/collected-jobs': typeof ApiPublicN8nCollectedJobsRoute
   '/api/public/n8n/export-jobs': typeof ApiPublicN8nExportJobsRoute
@@ -309,6 +327,7 @@ export interface FileRouteTypes {
     | '/candidates'
     | '/consultancies'
     | '/dashboard'
+    | '/health'
     | '/job-collection'
     | '/jobs'
     | '/notifications'
@@ -318,6 +337,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/jobs/$jobId'
+    | '/api/public/health'
     | '/api/public/n8n/candidates'
     | '/api/public/n8n/collected-jobs'
     | '/api/public/n8n/export-jobs'
@@ -340,6 +360,7 @@ export interface FileRouteTypes {
     | '/candidates'
     | '/consultancies'
     | '/dashboard'
+    | '/health'
     | '/job-collection'
     | '/jobs'
     | '/notifications'
@@ -349,6 +370,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/jobs/$jobId'
+    | '/api/public/health'
     | '/api/public/n8n/candidates'
     | '/api/public/n8n/collected-jobs'
     | '/api/public/n8n/export-jobs'
@@ -372,6 +394,7 @@ export interface FileRouteTypes {
     | '/_authenticated/candidates'
     | '/_authenticated/consultancies'
     | '/_authenticated/dashboard'
+    | '/_authenticated/health'
     | '/_authenticated/job-collection'
     | '/_authenticated/jobs'
     | '/_authenticated/notifications'
@@ -381,6 +404,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/jobs/$jobId'
+    | '/api/public/health'
     | '/api/public/n8n/candidates'
     | '/api/public/n8n/collected-jobs'
     | '/api/public/n8n/export-jobs'
@@ -404,6 +428,7 @@ export interface RootRouteChildren {
   GuidesAutomationRoute: typeof GuidesAutomationRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicN8nCandidatesRoute: typeof ApiPublicN8nCandidatesRoute
   ApiPublicN8nCollectedJobsRoute: typeof ApiPublicN8nCollectedJobsRoute
   ApiPublicN8nExportJobsRoute: typeof ApiPublicN8nExportJobsRoute
@@ -507,6 +532,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedJobCollectionRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/health': {
+      id: '/_authenticated/health'
+      path: '/health'
+      fullPath: '/health'
+      preLoaderRoute: typeof AuthenticatedHealthRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -547,6 +579,13 @@ declare module '@tanstack/react-router' {
       path: '/.mcp/list-tools'
       fullPath: '/.mcp/list-tools'
       preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/health': {
+      id: '/api/public/health'
+      path: '/api/public/health'
+      fullPath: '/api/public/health'
+      preLoaderRoute: typeof ApiPublicHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/jobs/$jobId': {
@@ -645,6 +684,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCandidatesRoute: typeof AuthenticatedCandidatesRoute
   AuthenticatedConsultanciesRoute: typeof AuthenticatedConsultanciesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedHealthRoute: typeof AuthenticatedHealthRoute
   AuthenticatedJobCollectionRoute: typeof AuthenticatedJobCollectionRoute
   AuthenticatedJobsRoute: typeof AuthenticatedJobsRouteWithChildren
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
@@ -657,6 +697,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCandidatesRoute: AuthenticatedCandidatesRoute,
   AuthenticatedConsultanciesRoute: AuthenticatedConsultanciesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedHealthRoute: AuthenticatedHealthRoute,
   AuthenticatedJobCollectionRoute: AuthenticatedJobCollectionRoute,
   AuthenticatedJobsRoute: AuthenticatedJobsRouteWithChildren,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
@@ -681,6 +722,7 @@ const rootRouteChildren: RootRouteChildren = {
   GuidesAutomationRoute: GuidesAutomationRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicN8nCandidatesRoute: ApiPublicN8nCandidatesRoute,
   ApiPublicN8nCollectedJobsRoute: ApiPublicN8nCollectedJobsRoute,
   ApiPublicN8nExportJobsRoute: ApiPublicN8nExportJobsRoute,
