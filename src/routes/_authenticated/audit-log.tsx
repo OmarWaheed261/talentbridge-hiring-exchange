@@ -161,6 +161,62 @@ function AuditLogPage() {
     setDateTo("");
   };
 
+  const filterPayload = () => ({
+    event_type: eventType === "all" ? null : eventType,
+    status: status === "all" ? null : status,
+    action: action === "all" ? null : action,
+    consultancy_id: consultancyId === "all" ? null : consultancyId,
+    actor: actor.trim() || null,
+    search: search.trim() || null,
+    from: dateFrom ? new Date(dateFrom).toISOString() : null,
+    to: dateTo ? new Date(dateTo + "T23:59:59").toISOString() : null,
+  });
+
+  const handleExport = async (fmt: "csv" | "pdf") => {
+    setExporting(fmt);
+    const toastId = toast.loading(`Preparing ${fmt.toUpperCase()} export…`);
+    try {
+      const res = await exportFn({ data: { ...filterPayload(), limit: 10000 } });
+      const rows = (res.rows ?? []) as AuditRow[];
+      if (rows.length === 0) {
+        toast.dismiss(toastId);
+        toast.info("No audit events match these filters.");
+        return;
+      }
+      const stamp = format(new Date(), "yyyyMMdd-HHmmss");
+      const base = `audit-log-${stamp}`;
+      if (fmt === "csv") {
+        exportAuditRowsAsCSV(rows, base);
+      } else {
+        const consultancyName =
+          consultancyId === "all"
+            ? null
+            : (facets.data?.consultancies ?? []).find((c) => c.id === consultancyId)?.company_name ?? consultancyId;
+        exportAuditRowsAsPDF(rows, base, {
+          filters: {
+            event_type: eventType,
+            action,
+            status,
+            consultancy: consultancyName,
+            actor: actor || null,
+            search: search || null,
+            from: dateFrom || null,
+            to: dateTo || null,
+          },
+          generatedAt: res.generated_at,
+        });
+      }
+      toast.success(`Exported ${rows.length.toLocaleString()} events as ${fmt.toUpperCase()}`, {
+        id: toastId,
+        description: rows.length === 10000 ? "Result capped at 10,000 rows — refine filters for a narrower set." : undefined,
+      });
+    } catch (err) {
+      toast.error(`Export failed: ${err instanceof Error ? err.message : "Unknown error"}`, { id: toastId });
+    } finally {
+      setExporting(null);
+    }
+  };
+
   if (!isSuper) {
     return (
       <div className="p-6">
