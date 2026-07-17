@@ -92,6 +92,40 @@ function AuditLogPage() {
       }),
   });
 
+  // Realtime: new audit events → refresh list + facets, and surface a toast
+  useEffect(() => {
+    if (!isSuper) return;
+    setLive("connecting");
+    const channel = supabase
+      .channel("audit-logs-stream")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "audit_logs" },
+        (payload) => {
+          const row = payload.new as {
+            event_type?: string;
+            action?: string;
+            actor_email?: string | null;
+            status?: string;
+          };
+          queryClient.invalidateQueries({ queryKey: ["audit-logs"] });
+          queryClient.invalidateQueries({ queryKey: ["audit-facets"] });
+          const who = row.actor_email ?? "system";
+          toast(`New ${row.event_type ?? "event"}: ${row.action ?? ""}`, {
+            description: `by ${who}${row.status === "failure" ? " · failed" : ""}`,
+          });
+        },
+      )
+      .subscribe((s) => {
+        if (s === "SUBSCRIBED") setLive("live");
+        else if (s === "CHANNEL_ERROR" || s === "TIMED_OUT" || s === "CLOSED") setLive("off");
+      });
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isSuper, queryClient]);
+
+
   const activeCount = useMemo(() => {
     let n = 0;
     if (eventType !== "all") n++;
