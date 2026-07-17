@@ -75,7 +75,7 @@ function AuditLogPage() {
       <PageHeader
         title="Audit Log"
         description="Authentication events and role-based actions for troubleshooting."
-        icon={ShieldCheck}
+
         actions={
           <Button variant="outline" size="sm" onClick={() => query.refetch()} disabled={query.isFetching}>
             <RefreshCw className={`h-4 w-4 mr-2 ${query.isFetching ? "animate-spin" : ""}`} />
