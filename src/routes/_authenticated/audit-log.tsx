@@ -1,16 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { RefreshCw, ShieldCheck, Search, Filter } from "lucide-react";
+import { RefreshCw, Search, Filter, X } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { listAuditLogs } from "@/lib/audit-log.functions";
+import { listAuditLogs, listAuditFacets } from "@/lib/audit-log.functions";
 import { useAuth } from "@/lib/auth";
 import { format } from "date-fns";
 
@@ -27,31 +28,87 @@ export const Route = createFileRoute("/_authenticated/audit-log")({
 
 type EventType = "auth" | "role_action" | "data" | "system";
 
+function useDebounced<T>(value: T, ms = 300): T {
+  const [v, setV] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setV(value), ms);
+    return () => clearTimeout(t);
+  }, [value, ms]);
+  return v;
+}
+
 function AuditLogPage() {
   const { roles } = useAuth();
   const isSuper = roles.includes("super_admin");
   const listFn = useServerFn(listAuditLogs);
+  const facetsFn = useServerFn(listAuditFacets);
 
   const [eventType, setEventType] = useState<EventType | "all">("all");
   const [status, setStatus] = useState<"all" | "success" | "failure">("all");
+  const [action, setAction] = useState<string>("all");
+  const [consultancyId, setConsultancyId] = useState<string>("all");
+  const [actor, setActor] = useState("");
   const [search, setSearch] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
   const pageSize = 50;
 
+  const debouncedSearch = useDebounced(search, 300);
+  const debouncedActor = useDebounced(actor, 300);
+
+  useEffect(() => { setPage(1); }, [eventType, status, action, consultancyId, debouncedActor, debouncedSearch, dateFrom, dateTo]);
+
+  const facets = useQuery({
+    queryKey: ["audit-facets"],
+    enabled: isSuper,
+    queryFn: () => facetsFn({}),
+    staleTime: 60_000,
+  });
+
   const query = useQuery({
-    queryKey: ["audit-logs", { eventType, status, search, page }],
+    queryKey: ["audit-logs", { eventType, status, action, consultancyId, debouncedActor, debouncedSearch, dateFrom, dateTo, page }],
     enabled: isSuper,
     queryFn: () =>
       listFn({
         data: {
           event_type: eventType === "all" ? null : eventType,
           status: status === "all" ? null : status,
-          search: search || null,
+          action: action === "all" ? null : action,
+          consultancy_id: consultancyId === "all" ? null : consultancyId,
+          actor: debouncedActor.trim() || null,
+          search: debouncedSearch.trim() || null,
+          from: dateFrom ? new Date(dateFrom).toISOString() : null,
+          to: dateTo ? new Date(dateTo + "T23:59:59").toISOString() : null,
           page,
           pageSize,
         },
       }),
   });
+
+  const activeCount = useMemo(() => {
+    let n = 0;
+    if (eventType !== "all") n++;
+    if (status !== "all") n++;
+    if (action !== "all") n++;
+    if (consultancyId !== "all") n++;
+    if (actor) n++;
+    if (search) n++;
+    if (dateFrom) n++;
+    if (dateTo) n++;
+    return n;
+  }, [eventType, status, action, consultancyId, actor, search, dateFrom, dateTo]);
+
+  const clearAll = () => {
+    setEventType("all");
+    setStatus("all");
+    setAction("all");
+    setConsultancyId("all");
+    setActor("");
+    setSearch("");
+    setDateFrom("");
+    setDateTo("");
+  };
 
   if (!isSuper) {
     return (
@@ -69,13 +126,14 @@ function AuditLogPage() {
   const rows = query.data?.rows ?? [];
   const total = query.data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const consultancies = facets.data?.consultancies ?? [];
+  const actions = facets.data?.actions ?? [];
 
   return (
     <div className="p-6 space-y-6">
       <PageHeader
         title="Audit Log"
         description="Authentication events and role-based actions for troubleshooting."
-
         actions={
           <Button variant="outline" size="sm" onClick={() => query.refetch()} disabled={query.isFetching}>
             <RefreshCw className={`h-4 w-4 mr-2 ${query.isFetching ? "animate-spin" : ""}`} />
@@ -85,23 +143,52 @@ function AuditLogPage() {
       />
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex-row items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
             <Filter className="h-4 w-4" /> Filters
+            {activeCount > 0 && <Badge variant="secondary">{activeCount} active</Badge>}
           </CardTitle>
+          {activeCount > 0 && (
+            <Button variant="ghost" size="sm" onClick={clearAll}>
+              <X className="h-4 w-4 mr-1" /> Clear
+            </Button>
+          )}
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-4">
           <div className="relative md:col-span-2">
-            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Label htmlFor="audit-search" className="sr-only">Keyword</Label>
+            <Search className="h-4 w-4 absolute left-3 top-[calc(50%+2px)] -translate-y-1/2 text-muted-foreground pointer-events-none" />
             <Input
-              placeholder="Search email, action, resource id…"
+              id="audit-search"
+              placeholder="Keyword: email, action, resource type or id…"
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
             />
           </div>
-          <Select value={eventType} onValueChange={(v) => { setEventType(v as EventType | "all"); setPage(1); }}>
-            <SelectTrigger><SelectValue placeholder="Event type" /></SelectTrigger>
+
+          <div>
+            <Label htmlFor="audit-actor" className="sr-only">User</Label>
+            <Input
+              id="audit-actor"
+              placeholder="User email or UUID"
+              value={actor}
+              onChange={(e) => setActor(e.target.value)}
+            />
+          </div>
+
+          <Select value={consultancyId} onValueChange={setConsultancyId}>
+            <SelectTrigger aria-label="Consultancy"><SelectValue placeholder="Consultancy" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All consultancies</SelectItem>
+              {consultancies.map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={eventType} onValueChange={(v) => setEventType(v as EventType | "all")}>
+            <SelectTrigger aria-label="Event type"><SelectValue placeholder="Event type" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All event types</SelectItem>
               <SelectItem value="auth">Auth</SelectItem>
@@ -110,14 +197,34 @@ function AuditLogPage() {
               <SelectItem value="system">System</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={status} onValueChange={(v) => { setStatus(v as "all" | "success" | "failure"); setPage(1); }}>
-            <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
+
+          <Select value={action} onValueChange={setAction}>
+            <SelectTrigger aria-label="Action"><SelectValue placeholder="Action" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All actions</SelectItem>
+              {actions.map((a) => (
+                <SelectItem key={a} value={a}>{a}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={status} onValueChange={(v) => setStatus(v as "all" | "success" | "failure")}>
+            <SelectTrigger aria-label="Status"><SelectValue placeholder="Status" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All statuses</SelectItem>
               <SelectItem value="success">Success</SelectItem>
               <SelectItem value="failure">Failure</SelectItem>
             </SelectContent>
           </Select>
+
+          <div>
+            <Label htmlFor="audit-from" className="text-xs text-muted-foreground">From</Label>
+            <Input id="audit-from" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+          </div>
+          <div>
+            <Label htmlFor="audit-to" className="text-xs text-muted-foreground">To</Label>
+            <Input id="audit-to" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+          </div>
         </CardContent>
       </Card>
 
@@ -160,7 +267,16 @@ function AuditLogPage() {
                     </TableCell>
                     <TableCell><Badge variant="outline">{r.event_type}</Badge></TableCell>
                     <TableCell className="font-medium">{r.action}</TableCell>
-                    <TableCell className="text-sm">{r.actor_email ?? r.actor_id ?? "—"}</TableCell>
+                    <TableCell className="text-sm">
+                      <button
+                        type="button"
+                        className="hover:underline text-left"
+                        onClick={() => setActor(r.actor_email ?? r.actor_id ?? "")}
+                        title="Filter by this user"
+                      >
+                        {r.actor_email ?? r.actor_id ?? "—"}
+                      </button>
+                    </TableCell>
                     <TableCell className="text-xs text-muted-foreground">{r.actor_role ?? "—"}</TableCell>
                     <TableCell className="text-xs">
                       {r.resource_type ? `${r.resource_type}${r.resource_id ? `:${r.resource_id}` : ""}` : "—"}
