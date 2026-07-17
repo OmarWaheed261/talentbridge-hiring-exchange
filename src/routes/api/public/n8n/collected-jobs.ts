@@ -7,11 +7,16 @@ const CollectedJobSchema = z.object({
   company_name: z.string().min(1).max(300),
   location: z.string().max(300).optional().nullable(),
   skills: z.array(z.string().max(80)).max(60).optional(),
+  tags: z.array(z.string().max(60)).max(30).optional(),
   job_url: z.string().url().max(2000).optional().nullable(),
   source: z.string().max(120).optional().nullable(),
   description: z.string().max(30000).optional().nullable(),
   posted_date: z.string().datetime().optional().nullable(),
   status: z.enum(["new", "processed", "shared"]).optional(),
+  employment_type: z.string().max(60).optional().nullable(),
+  experience_level: z.string().max(60).optional().nullable(),
+  salary_text: z.string().max(200).optional().nullable(),
+  company_website: z.string().url().max(500).optional().nullable(),
   raw_payload: z.record(z.string(), z.any()).optional().nullable(),
 }).strict();
 
