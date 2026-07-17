@@ -22,6 +22,7 @@ import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
 import { Route as AuthenticatedJobCollectionRouteImport } from './routes/_authenticated/job-collection'
+import { Route as AuthenticatedHealthRouteImport } from './routes/_authenticated/health'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedConsultanciesRouteImport } from './routes/_authenticated/consultancies'
 import { Route as AuthenticatedCandidatesRouteImport } from './routes/_authenticated/candidates'
@@ -106,6 +107,11 @@ const AuthenticatedJobCollectionRoute =
     path: '/job-collection',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedHealthRoute = AuthenticatedHealthRouteImport.update({
+  id: '/health',
+  path: '/health',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -212,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/candidates': typeof AuthenticatedCandidatesRoute
   '/consultancies': typeof AuthenticatedConsultanciesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/health': typeof AuthenticatedHealthRoute
   '/job-collection': typeof AuthenticatedJobCollectionRoute
   '/jobs': typeof AuthenticatedJobsRouteWithChildren
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -243,6 +250,7 @@ export interface FileRoutesByTo {
   '/candidates': typeof AuthenticatedCandidatesRoute
   '/consultancies': typeof AuthenticatedConsultanciesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/health': typeof AuthenticatedHealthRoute
   '/job-collection': typeof AuthenticatedJobCollectionRoute
   '/jobs': typeof AuthenticatedJobsRouteWithChildren
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -276,6 +284,7 @@ export interface FileRoutesById {
   '/_authenticated/candidates': typeof AuthenticatedCandidatesRoute
   '/_authenticated/consultancies': typeof AuthenticatedConsultanciesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/health': typeof AuthenticatedHealthRoute
   '/_authenticated/job-collection': typeof AuthenticatedJobCollectionRoute
   '/_authenticated/jobs': typeof AuthenticatedJobsRouteWithChildren
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
@@ -309,6 +318,7 @@ export interface FileRouteTypes {
     | '/candidates'
     | '/consultancies'
     | '/dashboard'
+    | '/health'
     | '/job-collection'
     | '/jobs'
     | '/notifications'
@@ -340,6 +350,7 @@ export interface FileRouteTypes {
     | '/candidates'
     | '/consultancies'
     | '/dashboard'
+    | '/health'
     | '/job-collection'
     | '/jobs'
     | '/notifications'
@@ -372,6 +383,7 @@ export interface FileRouteTypes {
     | '/_authenticated/candidates'
     | '/_authenticated/consultancies'
     | '/_authenticated/dashboard'
+    | '/_authenticated/health'
     | '/_authenticated/job-collection'
     | '/_authenticated/jobs'
     | '/_authenticated/notifications'
@@ -505,6 +517,13 @@ declare module '@tanstack/react-router' {
       path: '/job-collection'
       fullPath: '/job-collection'
       preLoaderRoute: typeof AuthenticatedJobCollectionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/health': {
+      id: '/_authenticated/health'
+      path: '/health'
+      fullPath: '/health'
+      preLoaderRoute: typeof AuthenticatedHealthRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -645,6 +664,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCandidatesRoute: typeof AuthenticatedCandidatesRoute
   AuthenticatedConsultanciesRoute: typeof AuthenticatedConsultanciesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedHealthRoute: typeof AuthenticatedHealthRoute
   AuthenticatedJobCollectionRoute: typeof AuthenticatedJobCollectionRoute
   AuthenticatedJobsRoute: typeof AuthenticatedJobsRouteWithChildren
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
@@ -657,6 +677,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCandidatesRoute: AuthenticatedCandidatesRoute,
   AuthenticatedConsultanciesRoute: AuthenticatedConsultanciesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedHealthRoute: AuthenticatedHealthRoute,
   AuthenticatedJobCollectionRoute: AuthenticatedJobCollectionRoute,
   AuthenticatedJobsRoute: AuthenticatedJobsRouteWithChildren,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
