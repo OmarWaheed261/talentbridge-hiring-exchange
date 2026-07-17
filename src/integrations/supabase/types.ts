@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      automation_logs: {
+        Row: {
+          created_at: string
+          duplicates_removed: number
+          event: string
+          id: string
+          jobs_imported: number
+          message: string | null
+          metadata: Json
+          source: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          duplicates_removed?: number
+          event: string
+          id?: string
+          jobs_imported?: number
+          message?: string | null
+          metadata?: Json
+          source: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          duplicates_removed?: number
+          event?: string
+          id?: string
+          jobs_imported?: number
+          message?: string | null
+          metadata?: Json
+          source?: string
+          status?: string
+        }
+        Relationships: []
+      }
       candidates: {
         Row: {
           candidate_name: string
@@ -83,47 +119,62 @@ export type Database = {
       collected_jobs: {
         Row: {
           company_name: string
+          company_website: string | null
           created_at: string
           description: string | null
+          employment_type: string | null
+          experience_level: string | null
           id: string
           job_title: string
           job_url: string | null
           location: string | null
           posted_date: string | null
           raw_payload: Json | null
+          salary_text: string | null
           skills: string[]
           source: string | null
           status: string
+          tags: string[]
           updated_at: string
         }
         Insert: {
           company_name: string
+          company_website?: string | null
           created_at?: string
           description?: string | null
+          employment_type?: string | null
+          experience_level?: string | null
           id?: string
           job_title: string
           job_url?: string | null
           location?: string | null
           posted_date?: string | null
           raw_payload?: Json | null
+          salary_text?: string | null
           skills?: string[]
           source?: string | null
           status?: string
+          tags?: string[]
           updated_at?: string
         }
         Update: {
           company_name?: string
+          company_website?: string | null
           created_at?: string
           description?: string | null
+          employment_type?: string | null
+          experience_level?: string | null
           id?: string
           job_title?: string
           job_url?: string | null
           location?: string | null
           posted_date?: string | null
           raw_payload?: Json | null
+          salary_text?: string | null
           skills?: string[]
           source?: string | null
           status?: string
+          tags?: string[]
           updated_at?: string
         }
         Relationships: []
@@ -284,6 +335,38 @@ export type Database = {
             columns: ["consultancy_id"]
             isOneToOne: true
             referencedRelation: "consultancies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_bookmarks: {
+        Row: {
+          collected_job_id: string
+          created_at: string
+          id: string
+          note: string | null
+          user_id: string
+        }
+        Insert: {
+          collected_job_id: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          user_id: string
+        }
+        Update: {
+          collected_job_id?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_bookmarks_collected_job_id_fkey"
+            columns: ["collected_job_id"]
+            isOneToOne: false
+            referencedRelation: "collected_jobs"
             referencedColumns: ["id"]
           },
         ]
@@ -450,6 +533,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "profiles_consultancy_id_fkey"
+            columns: ["consultancy_id"]
+            isOneToOne: false
+            referencedRelation: "consultancies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saved_searches: {
+        Row: {
+          consultancy_id: string | null
+          created_at: string
+          id: string
+          is_shared: boolean
+          name: string
+          query: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          consultancy_id?: string | null
+          created_at?: string
+          id?: string
+          is_shared?: boolean
+          name: string
+          query?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          consultancy_id?: string | null
+          created_at?: string
+          id?: string
+          is_shared?: boolean
+          name?: string
+          query?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_searches_consultancy_id_fkey"
             columns: ["consultancy_id"]
             isOneToOne: false
             referencedRelation: "consultancies"

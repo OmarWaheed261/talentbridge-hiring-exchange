@@ -1,73 +1,65 @@
-## Goal
 
-Offload large Job Collection Engine exports to n8n. The app enqueues a job, n8n generates the file (CSV/Excel) and uploads it, then the user gets a realtime toast with a download link. Small exports keep using the existing inline path.
+## What already exists (reuse, don't rebuild)
 
-## How it works
+- `collected_jobs` table with `job_url` unique constraint, indexes, realtime enabled
+- `/api/public/n8n/collected-jobs` ingest endpoint (dedupes on job_url)
+- `apify-ingest-collected-jobs.json` n8n template
+- `/job-collection` operator view (raw table + exports + saved views)
+- `saved_views` table + `SavedViewsBar` (already generic, filter JSON)
 
-```text
-User clicks "Queue export"
-   │
-   ▼
-queueExport server fn ──► insert export_jobs row (status=queued)
-   │                              │
-   │                              └─► dispatch n8n event "export.requested"
-   │
-   ▼
-Realtime subscription on export_jobs (consultancy/user-scoped)
-   │
-   ▼
-n8n workflow:
-  1. POST /api/public/n8n/export-jobs/claim   → marks running, returns filters
-  2. Paginates collected_jobs via existing public API
-  3. Builds CSV/XLSX
-  4. Uploads to "exports" Storage bucket
-  5. POST /api/public/n8n/export-jobs/complete → status=ready, file_path, row_count
-   │
-   ▼
-Realtime UPDATE arrives → toast "Export ready" with signed download URL
-```
+I will NOT touch those. The new work sits alongside as the recruiter-facing search surface.
 
-## Database
+## New database (one migration)
 
-New migration:
-- `export_jobs` table: `id`, `user_id`, `consultancy_id`, `page_key` ('job_collection'), `format` ('csv'|'xlsx'), `filters jsonb`, `status` ('queued'|'running'|'ready'|'failed'), `row_count`, `file_path`, `error`, `created_at`, `updated_at`, `completed_at`.
-- Indexes on `(consultancy_id, created_at desc)` and `status`.
-- RLS: members read/insert their consultancy's jobs; service role full access (for n8n callback).
-- `GRANT` SELECT/INSERT to `authenticated`, ALL to `service_role`.
-- Enable Realtime and `REPLICA IDENTITY FULL`.
-- New private Storage bucket `exports` with policies: members read only files under `${consultancy_id}/…`; service role writes.
+1. `job_bookmarks (id, user_id, collected_job_id, note, created_at)` — RLS: own rows only.
+2. `saved_searches (id, user_id, consultancy_id, name, query jsonb, created_at)` — RLS: own rows; consultancy admins can read shared.
+3. `automation_logs (id, source, event, status, message, metadata jsonb, created_at)` — RLS: authenticated read, service_role write. Populated by n8n via a new endpoint.
+4. Add nullable columns to `collected_jobs`: `employment_type text`, `experience_level text`, `salary_text text`, `tags text[] default '{}'`, `company_website text`. Backfill from `raw_payload` where present.
+5. GIN indexes on `collected_jobs (skills)`, `(tags)`, and a `tsvector` expression index on `(job_title || company_name || description)` for full-text search.
 
-## Backend
+## New API endpoints (`src/routes/api/public/n8n/`)
 
-- `src/lib/export-jobs.functions.ts`
-  - `queueExport({ page_key, format, filters })` — uses `requireSupabaseAuth`, inserts row, dispatches `export.requested` n8n event with the job id, returns the row.
-  - `getSignedExportUrl({ jobId })` — verifies ownership, returns 15‑min signed URL from `exports` bucket.
-- `src/routes/api/public/n8n/export-jobs.ts` (verified by `verifyN8nRequest`)
-  - `POST { action: 'claim', jobId }` → flips `queued`→`running`, returns filters + page_key.
-  - `POST { action: 'complete', jobId, file_path, row_count }` → `ready`, sets timestamps.
-  - `POST { action: 'fail', jobId, error }` → `failed`.
-- Reuse existing `dispatchN8nEvent` for the outbound `export.requested` notification.
+- `automation-logs.ts` POST — n8n posts run summaries (source, jobs_imported, duplicates_removed, status). Secured with `x-n8n-secret`.
+- Extend `collected-jobs.ts` schema to accept the new nullable fields.
 
-## UI changes (`src/routes/_authenticated/job-collection.tsx`)
+## New pages (all under `_authenticated/`)
 
-- Extend the Export dropdown with **Queue CSV (n8n)** and **Queue Excel (n8n)** items. Auto-suggest the queue path when filtered row count exceeds 5,000 (toast hint).
-- Toast lifecycle: "Queued — you'll be notified when ready".
-- Subscribe to `postgres_changes` on `export_jobs` filtered to current user. On `ready` → toast with **Download** action that calls `getSignedExportUrl` and triggers the browser download. On `failed` → error toast with reason.
-- New "Export queue" entry inside the existing **Export history** dialog showing queued/running/ready jobs with re‑download buttons.
+- `job-search.tsx` — the main recruiter interface.
+  - URL-driven search params (`@tanstack/zod-adapter`): `q, location, employment_type, experience_level, source, skills[], tags[], sort, view (cards|table), page`.
+  - Debounced global search with Postgres full-text (`ilike` fallback if FTS index missing).
+  - Sidebar filters: Location (US preset list + free text), Employment Type, Experience Level, Source, Skills multi-select (searchable), Tags multi-select.
+  - Sort: Newest / Oldest / Company / Most Relevant (FTS rank when q present).
+  - Card + Table toggle. Each result: title, company, location, skills badges, posted date, source badge, status, actions (View, Bookmark, Share to consultancy).
+  - Realtime subscription to `collected_jobs` INSERTs — new results slide in with a "N new jobs" pill.
+  - Saved Searches drawer: save current filters, list, one-click apply, delete.
 
-## n8n template
+- `job-search.$jobId.tsx` — detail page.
+  - Full description, skills, experience, salary, company + website, location, employment type, source, original URL button.
+  - Actions: Submit Candidate (opens existing CandidateDialog prefilled with job_id linkage), Bookmark, Share (copy link).
 
-New `n8n-templates/export-job-runner.json`:
-1. Webhook trigger (filters by `event_type = "export.requested"` header).
-2. HTTP request → `/export-jobs` claim.
-3. Loop: HTTP GET `/api/public/n8n/collected-jobs?...filters&page=N` (1k per page, cap 100k).
-4. Code node: CSV or XLSX (SheetJS) build in memory.
-5. HTTP request: Supabase Storage upload to `exports/${consultancy_id}/${jobId}.${ext}` using service-role key.
-6. HTTP request → `/export-jobs` complete (or fail on error branch).
-7. Register the template in the static template route.
+- `automation-center.tsx` — status dashboard.
+  - Stat cards: Last Sync, Jobs Imported Today, Total Jobs, Duplicates Removed (24h), Apify / n8n / Supabase status pills (health check for supabase via existing `runRlsHealthcheck`; Apify/n8n derived from recent `automation_logs`).
+  - Recent Automation Logs table (last 50) with realtime append.
 
-## Out of scope
+## Components
 
-- Email/SMS notifications (toast + in-app only this pass).
-- Other pages (Candidates) — same `page_key` mechanism leaves it trivial to add later.
-- Inline exports (≤ current cap) keep their existing CSV/XLSX path; nothing about that flow changes.
+- `src/components/JobCard.tsx` — reusable card used by search + saved searches.
+- `src/components/JobFiltersSidebar.tsx` — collapsible filter panel.
+- `src/components/SavedSearchesDrawer.tsx` — list/save/apply.
+- `src/lib/job-search.functions.ts` — `searchCollectedJobs`, `toggleBookmark`, `saveSearch`, `listSavedSearches`, `deleteSavedSearch` server fns (all `requireSupabaseAuth`).
+
+## Navigation
+
+Add "Job Search" and "Automation Center" entries to `AppSidebar`. Keep "Job Collection" as the operator/admin surface.
+
+## n8n
+
+Extend `apify-ingest-collected-jobs.json` code node to also emit `employment_type`, `experience_level`, `salary_text`, `tags`, `company_website`. Add new `report-automation-run.json` template that POSTs to `/api/public/n8n/automation-logs` after each ingest.
+
+## Not doing (explicitly out of scope this turn)
+
+- AI matching / resume ranking / recommendation engine — request says "future ready", schema is left extensible via `raw_payload` + `tags`.
+- Editing existing `/job-collection` page.
+- Multi-tenant sharing of saved searches beyond "own + consultancy admin read".
+
+Ship on approval.

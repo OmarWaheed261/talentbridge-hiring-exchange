@@ -1,0 +1,48 @@
+{
+  "name": "TalentBridge — Report Automation Run",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "report-automation-run",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "hook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 300],
+      "webhookId": "report-automation-run"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://talentbridge-pro-hub.lovable.app/api/public/n8n/automation-logs",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-n8n-secret", "value": "={{$env.N8N_WEBHOOK_SECRET}}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ source: $json.body.source || 'apify', event: $json.body.event || 'ingest', status: $json.body.status || 'success', message: $json.body.message, jobs_imported: $json.body.jobs_imported || 0, duplicates_removed: $json.body.duplicates_removed || 0, metadata: $json.body.metadata || {} }) }}",
+        "options": { "timeout": 15000 }
+      },
+      "id": "post",
+      "name": "POST automation-logs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[{ "node": "POST automation-logs", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": {
+    "description": "Call this at the end of any ingest workflow (Apify, LinkedIn scraper, etc.) to record a run summary in the Automation Center."
+  }
+}
