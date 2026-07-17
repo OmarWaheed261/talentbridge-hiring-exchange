@@ -86,7 +86,7 @@ function JobSearchPage() {
   useEffect(() => {
     const t = setTimeout(() => {
       if (qDraft !== search.q) {
-        navigate({ search: (prev) => ({ ...prev, q: qDraft, page: 1 }), replace: true });
+        navigate({ search: (prev: any) => ({ ...prev, q: qDraft, page: 1 }), replace: true });
       }
     }, 350);
     return () => clearTimeout(t);
@@ -178,7 +178,7 @@ function JobSearchPage() {
   };
 
   const applySaved = (q: any) => {
-    navigate({ search: (p) => ({ ...p, ...q, page: 1 }), replace: true });
+    navigate({ search: (p: any) => ({ ...p, ...q, page: 1 }), replace: true });
   };
 
   return (
@@ -243,7 +243,7 @@ function JobSearchPage() {
           />
         </div>
         <div className="flex gap-2">
-          <Select value={search.sort} onValueChange={(v) => navigate({ search: (p) => ({ ...p, sort: v, page: 1 }), replace: true })}>
+          <Select value={search.sort} onValueChange={(v) => navigate({ search: (p: any) => ({ ...p, sort: v, page: 1 }), replace: true })}>
             <SelectTrigger className="w-[170px] h-11"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="newest">Newest</SelectItem>
@@ -253,9 +253,9 @@ function JobSearchPage() {
             </SelectContent>
           </Select>
           <div className="flex border rounded-md overflow-hidden">
-            <button aria-label="Card view" onClick={() => navigate({ search: (p) => ({ ...p, view: "cards" }), replace: true })}
+            <button aria-label="Card view" onClick={() => navigate({ search: (p: any) => ({ ...p, view: "cards" }), replace: true })}
               className={`px-3 h-11 ${search.view === "cards" ? "bg-primary/10 text-primary" : ""}`}><LayoutGrid className="h-4 w-4" /></button>
-            <button aria-label="Table view" onClick={() => navigate({ search: (p) => ({ ...p, view: "table" }), replace: true })}
+            <button aria-label="Table view" onClick={() => navigate({ search: (p: any) => ({ ...p, view: "table" }), replace: true })}
               className={`px-3 h-11 ${search.view === "table" ? "bg-primary/10 text-primary" : ""}`}><List className="h-4 w-4" /></button>
           </div>
         </div>
@@ -268,14 +268,14 @@ function JobSearchPage() {
             <div className="flex items-center gap-2 font-medium"><SlidersHorizontal className="h-4 w-4" />Filters</div>
             {activeFilters.length > 0 && (
               <button className="text-xs text-primary hover:underline"
-                onClick={() => navigate({ search: (p) => ({ ...p, location: "", employment_type: "", experience_level: "", source: "", skills: [], tags: [], page: 1 }), replace: true })}>
+                onClick={() => navigate({ search: (p: any) => ({ ...p, location: "", employment_type: "", experience_level: "", source: "", skills: [], tags: [], page: 1 }), replace: true })}>
                 Clear all
               </button>
             )}
           </CardHeader>
           <CardContent className="space-y-4">
             <FilterBlock label="Location">
-              <Select value={search.location || "any"} onValueChange={(v) => navigate({ search: (p) => ({ ...p, location: v === "any" ? "" : v, page: 1 }), replace: true })}>
+              <Select value={search.location || "any"} onValueChange={(v) => navigate({ search: (p: any) => ({ ...p, location: v === "any" ? "" : v, page: 1 }), replace: true })}>
                 <SelectTrigger><SelectValue placeholder="Any" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="any">Any</SelectItem>
@@ -284,7 +284,7 @@ function JobSearchPage() {
               </Select>
             </FilterBlock>
             <FilterBlock label="Employment type">
-              <Select value={search.employment_type || "any"} onValueChange={(v) => navigate({ search: (p) => ({ ...p, employment_type: v === "any" ? "" : v, page: 1 }), replace: true })}>
+              <Select value={search.employment_type || "any"} onValueChange={(v) => navigate({ search: (p: any) => ({ ...p, employment_type: v === "any" ? "" : v, page: 1 }), replace: true })}>
                 <SelectTrigger><SelectValue placeholder="Any" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="any">Any</SelectItem>
@@ -293,7 +293,7 @@ function JobSearchPage() {
               </Select>
             </FilterBlock>
             <FilterBlock label="Experience level">
-              <Select value={search.experience_level || "any"} onValueChange={(v) => navigate({ search: (p) => ({ ...p, experience_level: v === "any" ? "" : v, page: 1 }), replace: true })}>
+              <Select value={search.experience_level || "any"} onValueChange={(v) => navigate({ search: (p: any) => ({ ...p, experience_level: v === "any" ? "" : v, page: 1 }), replace: true })}>
                 <SelectTrigger><SelectValue placeholder="Any" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="any">Any</SelectItem>
@@ -302,7 +302,7 @@ function JobSearchPage() {
               </Select>
             </FilterBlock>
             <FilterBlock label="Source">
-              <Select value={search.source || "any"} onValueChange={(v) => navigate({ search: (p) => ({ ...p, source: v === "any" ? "" : v, page: 1 }), replace: true })}>
+              <Select value={search.source || "any"} onValueChange={(v) => navigate({ search: (p: any) => ({ ...p, source: v === "any" ? "" : v, page: 1 }), replace: true })}>
                 <SelectTrigger><SelectValue placeholder="Any" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="any">Any</SelectItem>
@@ -314,13 +314,13 @@ function JobSearchPage() {
               label="Skills"
               options={SKILL_OPTIONS}
               selected={search.skills}
-              onChange={(next) => navigate({ search: (p) => ({ ...p, skills: next, page: 1 }), replace: true })}
+              onChange={(next) => navigate({ search: (p: any) => ({ ...p, skills: next, page: 1 }), replace: true })}
             />
             <MultiSelect
               label="Tags"
               options={TAG_OPTIONS}
               selected={search.tags}
-              onChange={(next) => navigate({ search: (p) => ({ ...p, tags: next, page: 1 }), replace: true })}
+              onChange={(next) => navigate({ search: (p: any) => ({ ...p, tags: next, page: 1 }), replace: true })}
             />
           </CardContent>
         </Card>
@@ -392,11 +392,11 @@ function JobSearchPage() {
           {/* Pagination */}
           <div className="flex items-center justify-end gap-2">
             <Button variant="outline" size="sm" disabled={search.page <= 1}
-              onClick={() => navigate({ search: (p) => ({ ...p, page: Math.max(1, p.page - 1) }), replace: true })}>
+              onClick={() => navigate({ search: (p: any) => ({ ...p, page: Math.max(1, p.page - 1) }), replace: true })}>
               <ChevronLeft className="h-4 w-4" />Prev
             </Button>
             <Button variant="outline" size="sm" disabled={search.page >= totalPages}
-              onClick={() => navigate({ search: (p) => ({ ...p, page: p.page + 1 }), replace: true })}>
+              onClick={() => navigate({ search: (p: any) => ({ ...p, page: p.page + 1 }), replace: true })}>
               Next<ChevronRight className="h-4 w-4" />
             </Button>
           </div>
