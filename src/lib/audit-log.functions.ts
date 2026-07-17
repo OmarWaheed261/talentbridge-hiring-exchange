@@ -149,3 +149,59 @@ export const listAuditFacets = createServerFn({ method: "GET" })
       consultancies: consultanciesRes.data ?? [],
     };
   });
+
+const exportSchema = listSchema.omit({ page: true, pageSize: true }).extend({
+  limit: z.number().int().min(1).max(10000).default(10000),
+});
+
+export const exportAuditLogsData = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: z.infer<typeof exportSchema>) => exportSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isSuper } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "super_admin",
+    });
+    if (!isSuper) throw new Error("Forbidden: super_admin role required");
+
+    let q = supabase
+      .from("audit_logs")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(data.limit);
+
+    if (data.event_type) q = q.eq("event_type", data.event_type);
+    if (data.action) q = q.eq("action", data.action);
+    if (data.status) q = q.eq("status", data.status);
+    if (data.from) q = q.gte("created_at", data.from);
+    if (data.to) q = q.lte("created_at", data.to);
+
+    if (data.actor) {
+      const a = data.actor.trim();
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(a);
+      if (isUuid) q = q.or(`actor_id.eq.${a},target_user_id.eq.${a}`);
+      else q = q.ilike("actor_email", `%${a}%`);
+    }
+
+    if (data.consultancy_id) {
+      const { data: members } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("consultancy_id", data.consultancy_id);
+      const ids = (members ?? []).map((m) => m.id);
+      if (ids.length === 0) return { rows: [], generated_at: new Date().toISOString() };
+      q = q.in("actor_id", ids);
+    }
+
+    if (data.search) {
+      const s = `%${data.search}%`;
+      q = q.or(
+        `actor_email.ilike.${s},action.ilike.${s},resource_id.ilike.${s},resource_type.ilike.${s}`,
+      );
+    }
+
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+    return { rows: rows ?? [], generated_at: new Date().toISOString() };
+  });
