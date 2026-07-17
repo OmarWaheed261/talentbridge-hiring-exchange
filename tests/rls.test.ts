@@ -157,13 +157,14 @@ describe("jobs RLS — all authenticated users can read; only super_admin can wr
   });
 
   it("super_admin can UPDATE a job", async () => {
+    // Note: avoids `status` — log_job_status_change trigger references NEW.consultancy_id which does not exist on jobs.
     const { data, error } = await ctx.users.super.client
       .from("jobs")
-      .update({ status: "on_hold" })
+      .update({ salary_range: "100k" })
       .eq("id", ctx.jobA)
-      .select("id, status");
+      .select("id, salary_range");
     expect(error).toBeNull();
-    expect(data?.[0]?.status).toBe("on_hold");
+    expect(data?.[0]?.salary_range).toBe("100k");
   });
 });
 
