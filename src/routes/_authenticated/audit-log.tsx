@@ -257,6 +257,24 @@ function AuditLogPage() {
               <RefreshCw className={`h-4 w-4 mr-2 ${query.isFetching ? "animate-spin" : ""}`} />
               Refresh
             </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" disabled={exporting !== null || query.isLoading}>
+                  <Download className={`h-4 w-4 mr-2 ${exporting ? "animate-pulse" : ""}`} />
+                  {exporting ? `Exporting ${exporting.toUpperCase()}…` : "Export"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Incident report</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => handleExport("csv")}>
+                  <FileSpreadsheet className="h-4 w-4 mr-2" /> CSV (spreadsheet)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport("pdf")}>
+                  <FileText className="h-4 w-4 mr-2" /> PDF (formatted)
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         }
 
