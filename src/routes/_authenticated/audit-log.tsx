@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
-import { RefreshCw, Search, Filter, X } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { RefreshCw, Search, Filter, X, Radio } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,6 +44,10 @@ function AuditLogPage() {
   const isSuper = roles.includes("super_admin");
   const listFn = useServerFn(listAuditLogs);
   const facetsFn = useServerFn(listAuditFacets);
+  const queryClient = useQueryClient();
+  const [live, setLive] = useState<"connecting" | "live" | "off">("connecting");
+
+
 
   const [eventType, setEventType] = useState<EventType | "all">("all");
   const [status, setStatus] = useState<"all" | "success" | "failure">("all");
@@ -85,6 +91,40 @@ function AuditLogPage() {
         },
       }),
   });
+
+  // Realtime: new audit events → refresh list + facets, and surface a toast
+  useEffect(() => {
+    if (!isSuper) return;
+    setLive("connecting");
+    const channel = supabase
+      .channel("audit-logs-stream")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "audit_logs" },
+        (payload) => {
+          const row = payload.new as {
+            event_type?: string;
+            action?: string;
+            actor_email?: string | null;
+            status?: string;
+          };
+          queryClient.invalidateQueries({ queryKey: ["audit-logs"] });
+          queryClient.invalidateQueries({ queryKey: ["audit-facets"] });
+          const who = row.actor_email ?? "system";
+          toast(`New ${row.event_type ?? "event"}: ${row.action ?? ""}`, {
+            description: `by ${who}${row.status === "failure" ? " · failed" : ""}`,
+          });
+        },
+      )
+      .subscribe((s) => {
+        if (s === "SUBSCRIBED") setLive("live");
+        else if (s === "CHANNEL_ERROR" || s === "TIMED_OUT" || s === "CLOSED") setLive("off");
+      });
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isSuper, queryClient]);
+
 
   const activeCount = useMemo(() => {
     let n = 0;
@@ -135,11 +175,24 @@ function AuditLogPage() {
         title="Audit Log"
         description="Authentication events and role-based actions for troubleshooting."
         actions={
-          <Button variant="outline" size="sm" onClick={() => query.refetch()} disabled={query.isFetching}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${query.isFetching ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
+          <div className="flex items-center gap-2">
+            <Badge
+              variant={live === "live" ? "secondary" : "outline"}
+              className="gap-1"
+              aria-live="polite"
+            >
+              <Radio
+                className={`h-3 w-3 ${live === "live" ? "text-emerald-500 animate-pulse" : "text-muted-foreground"}`}
+              />
+              {live === "live" ? "Live" : live === "connecting" ? "Connecting…" : "Offline"}
+            </Badge>
+            <Button variant="outline" size="sm" onClick={() => query.refetch()} disabled={query.isFetching}>
+              <RefreshCw className={`h-4 w-4 mr-2 ${query.isFetching ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+          </div>
         }
+
       />
 
       <Card>
