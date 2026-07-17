@@ -139,7 +139,7 @@ export const listAuditFacets = createServerFn({ method: "GET" })
 
     const [actionsRes, consultanciesRes] = await Promise.all([
       supabase.from("audit_logs").select("action").order("action").limit(1000),
-      supabase.from("consultancies").select("id, name").order("name"),
+      supabase.from("consultancies").select("id, company_name").order("company_name"),
     ]);
     const actions = Array.from(
       new Set((actionsRes.data ?? []).map((r) => r.action).filter(Boolean)),
