@@ -10,6 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" ? s.next : undefined,
+  }),
   component: AuthPage,
   head: () => ({
     meta: [
@@ -29,6 +32,13 @@ export const Route = createFileRoute("/auth")({
     links: [{ rel: "canonical", href: "https://talentbridge-pro-hub.lovable.app/auth" }],
   }),
 });
+
+// Only allow same-origin relative paths as post-auth destinations.
+function safeNext(next: string | undefined): string | null {
+  if (!next || !next.startsWith("/") || next.startsWith("//")) return null;
+  return next;
+}
+
 
 function AuthPage() {
   const navigate = useNavigate();
