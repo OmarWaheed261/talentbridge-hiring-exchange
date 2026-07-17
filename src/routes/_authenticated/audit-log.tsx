@@ -175,11 +175,24 @@ function AuditLogPage() {
         title="Audit Log"
         description="Authentication events and role-based actions for troubleshooting."
         actions={
-          <Button variant="outline" size="sm" onClick={() => query.refetch()} disabled={query.isFetching}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${query.isFetching ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
+          <div className="flex items-center gap-2">
+            <Badge
+              variant={live === "live" ? "secondary" : "outline"}
+              className="gap-1"
+              aria-live="polite"
+            >
+              <Radio
+                className={`h-3 w-3 ${live === "live" ? "text-emerald-500 animate-pulse" : "text-muted-foreground"}`}
+              />
+              {live === "live" ? "Live" : live === "connecting" ? "Connecting…" : "Offline"}
+            </Badge>
+            <Button variant="outline" size="sm" onClick={() => query.refetch()} disabled={query.isFetching}>
+              <RefreshCw className={`h-4 w-4 mr-2 ${query.isFetching ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+          </div>
         }
+
       />
 
       <Card>
