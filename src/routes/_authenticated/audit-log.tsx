@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { RefreshCw, Search, Filter, X, Radio } from "lucide-react";
+import { RefreshCw, Search, Filter, X, Radio, Download, FileText, FileSpreadsheet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/PageHeader";
@@ -13,7 +13,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { listAuditLogs, listAuditFacets } from "@/lib/audit-log.functions";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { listAuditLogs, listAuditFacets, exportAuditLogsData } from "@/lib/audit-log.functions";
+import { exportAuditRowsAsCSV, exportAuditRowsAsPDF, type AuditRow } from "@/lib/audit-log-export";
 import { useAuth } from "@/lib/auth";
 import { format } from "date-fns";
 
