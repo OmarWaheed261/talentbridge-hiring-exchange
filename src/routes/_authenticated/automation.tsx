@@ -1,116 +1,132 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Workflow, Database, Bell, Calendar, ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { Workflow, Database, Radar, RefreshCw, CheckCircle2, AlertCircle, Clock } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import { PageHeader } from "@/components/PageHeader";
+import { StatCard } from "@/components/StatCard";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { getAutomationOverview } from "@/lib/job-search.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/automation")({
-  component: AutomationPage,
+  component: AutomationCenter,
   head: () => ({
     meta: [
       { title: "Automation Center — TalentBridge AI" },
-      {
-        name: "description",
-        content:
-          "Visual n8n-powered workflows for job discovery, candidate submission, and interview scheduling across your recruitment pipeline.",
-      },
+      { name: "description", content: "Realtime status of your Apify, n8n, and Lovable Cloud job-collection pipeline." },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
 });
 
-const flows = [
-  {
-    title: "Job Discovery Workflow",
-    description: "Automatically pulls fresh job openings from external sources into your database.",
-    status: "active",
-    steps: [
-      { label: "Job Sources", icon: Database, tone: "info" },
-      { label: "n8n", icon: Workflow, tone: "primary" },
-      { label: "Lovable Cloud", icon: Database, tone: "primary" },
-      { label: "Dashboard", icon: Sparkles, tone: "success" },
-    ],
-  },
-  {
-    title: "Candidate Submission Workflow",
-    description: "When a consultancy submits a candidate, notifications are sent and the database is updated.",
-    status: "active",
-    steps: [
-      { label: "Candidate Submission", icon: CheckCircle2, tone: "info" },
-      { label: "Notification", icon: Bell, tone: "warning" },
-      { label: "Database Update", icon: Database, tone: "success" },
-    ],
-  },
-  {
-    title: "Interview Workflow",
-    description: "Coordinates interview scheduling with email notifications and status tracking.",
-    status: "draft",
-    steps: [
-      { label: "Interview Scheduled", icon: Calendar, tone: "primary" },
-      { label: "Email Notification", icon: Bell, tone: "warning" },
-      { label: "Status Update", icon: CheckCircle2, tone: "success" },
-    ],
-  },
-] as const;
+function AutomationCenter() {
+  const fn = useServerFn(getAutomationOverview);
+  const qc = useQueryClient();
+  const q = useQuery({ queryKey: ["automation-overview"], queryFn: () => fn(), refetchInterval: 30_000 });
 
-const toneClasses: Record<string, string> = {
-  primary: "bg-primary/10 text-primary",
-  success: "bg-success/10 text-success",
-  warning: "bg-warning/10 text-warning",
-  info: "bg-info/10 text-info",
-};
+  useEffect(() => {
+    const ch = supabase
+      .channel("automation-live")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "automation_logs" },
+        () => qc.invalidateQueries({ queryKey: ["automation-overview"] }))
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [qc]);
 
-function AutomationPage() {
+  const d = q.data;
+  const lastSyncFresh = d?.lastSync ? (Date.now() - new Date(d.lastSync).getTime() < 6 * 3600_000) : false;
+
   return (
-    <>
+    <div className="p-6 space-y-6">
       <PageHeader
         title="Automation Center"
-        description="Visual workflows powered by n8n that keep your recruitment pipeline humming."
+        description="Realtime status of the Apify → n8n → Lovable Cloud pipeline."
+        actions={
+          <Button variant="outline" onClick={() => qc.invalidateQueries({ queryKey: ["automation-overview"] })}>
+            <RefreshCw className="h-4 w-4 mr-2" />Refresh
+          </Button>
+        }
       />
-      <div className="p-6 lg:p-10 space-y-6">
-        {flows.map((flow) => (
-          <div key={flow.title} className="glass rounded-2xl p-6 shadow-card">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="font-semibold text-lg">{flow.title}</h2>
-                  <Badge className={flow.status === "active" ? "bg-success/15 text-success border-success/20" : "bg-muted text-muted-foreground"}>
-                    {flow.status === "active" ? "● Active" : "○ Draft"}
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">{flow.description}</p>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-3 overflow-x-auto">
-              {flow.steps.map((s, i) => (
-                <div key={s.label} className="flex items-center gap-3">
-                  <div className="flex items-center gap-3 bg-card border border-border/60 rounded-xl px-4 py-3 shadow-sm min-w-44">
-                    <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${toneClasses[s.tone]}`}>
-                      <s.icon className="h-4.5 w-4.5" />
-                    </div>
-                    <div>
-                      <div className="text-xs text-muted-foreground">Step {i + 1}</div>
-                      <div className="font-medium text-sm">{s.label}</div>
-                    </div>
-                  </div>
-                  {i < flow.steps.length - 1 && (
-                    <ArrowRight className="h-5 w-5 text-muted-foreground/50 shrink-0" />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
 
-        <div className="glass rounded-2xl p-6 shadow-card bg-gradient-to-br from-primary/5 to-transparent border border-primary/20">
-          <div className="flex items-start gap-3">
-            <Sparkles className="h-5 w-5 text-primary mt-0.5" />
-            <div>
-              <h2 className="font-semibold">Build your own workflow</h2>
-              <p className="text-sm text-muted-foreground mt-1">Connect any n8n workflow to TalentBridge AI to automate notifications, integrations, and recruiter actions.</p>
-            </div>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <StatCard label="Total jobs" value={(d?.totalJobs ?? 0).toLocaleString()} icon={Database} />
+        <StatCard label="Imported today" value={(d?.jobsToday ?? 0).toLocaleString()} icon={Radar} />
+        <StatCard label="Duplicates removed (24h)" value={(d?.duplicatesRemoved24h ?? 0).toLocaleString()} icon={CheckCircle2} />
+        <StatCard label="Last sync"
+          value={d?.lastSync ? formatDistanceToNow(new Date(d.lastSync), { addSuffix: true }) : "—"}
+          icon={Clock} />
       </div>
-    </>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <StatusPill service="Apify" ok={lastSyncFresh} detail={d?.lastSyncSource ?? "no runs yet"} />
+        <StatusPill service="n8n" ok={lastSyncFresh} detail={d?.lastSyncStatus ?? "no runs yet"} />
+        <StatusPill service="Lovable Cloud" ok={true} detail="online" />
+      </div>
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">Recent automation logs</CardTitle></CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/40 text-left">
+                <tr>
+                  <th className="px-3 py-2">When</th>
+                  <th className="px-3 py-2">Source</th>
+                  <th className="px-3 py-2">Event</th>
+                  <th className="px-3 py-2">Status</th>
+                  <th className="px-3 py-2 text-right">Imported</th>
+                  <th className="px-3 py-2 text-right">Duplicates</th>
+                  <th className="px-3 py-2">Message</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(d?.logs ?? []).map((l: any) => (
+                  <tr key={l.id} className="border-t">
+                    <td className="px-3 py-2 whitespace-nowrap text-muted-foreground">
+                      {formatDistanceToNow(new Date(l.created_at), { addSuffix: true })}
+                    </td>
+                    <td className="px-3 py-2 capitalize">{l.source}</td>
+                    <td className="px-3 py-2">{l.event}</td>
+                    <td className="px-3 py-2">
+                      <Badge variant={l.status === "success" ? "default" : l.status === "failure" ? "destructive" : "secondary"}>
+                        {l.status}
+                      </Badge>
+                    </td>
+                    <td className="px-3 py-2 text-right">{l.jobs_imported ?? 0}</td>
+                    <td className="px-3 py-2 text-right">{l.duplicates_removed ?? 0}</td>
+                    <td className="px-3 py-2 text-muted-foreground max-w-md truncate" title={l.message ?? ""}>{l.message ?? "—"}</td>
+                  </tr>
+                ))}
+                {(d?.logs ?? []).length === 0 && (
+                  <tr><td colSpan={7} className="px-3 py-8 text-center text-muted-foreground">
+                    No automation runs yet. Trigger your first n8n workflow.
+                  </td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function StatusPill({ service, ok, detail }: { service: string; ok: boolean; detail: string }) {
+  return (
+    <Card>
+      <CardContent className="p-4 flex items-center gap-3">
+        <div className={`h-9 w-9 rounded-full flex items-center justify-center ${ok ? "bg-emerald-500/15 text-emerald-600" : "bg-amber-500/15 text-amber-600"}`}>
+          {ok ? <CheckCircle2 className="h-5 w-5" /> : <AlertCircle className="h-5 w-5" />}
+        </div>
+        <div>
+          <div className="font-medium">{service}</div>
+          <div className="text-xs text-muted-foreground capitalize">{detail}</div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
