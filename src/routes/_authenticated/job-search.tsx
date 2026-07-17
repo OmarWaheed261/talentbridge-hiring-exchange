@@ -145,8 +145,8 @@ function JobSearchPage() {
     search.employment_type && { k: "employment_type", v: search.employment_type },
     search.experience_level && { k: "experience_level", v: search.experience_level },
     search.source && { k: "source", v: search.source },
-    ...search.skills.map((s) => ({ k: "skills", v: s })),
-    ...search.tags.map((s) => ({ k: "tags", v: s })),
+    ...search.skills.map((s: string) => ({ k: "skills", v: s })),
+    ...search.tags.map((s: string) => ({ k: "tags", v: s })),
   ].filter(Boolean) as { k: string; v: string }[];
 
   const clearFilter = (k: string, v?: string) => {
