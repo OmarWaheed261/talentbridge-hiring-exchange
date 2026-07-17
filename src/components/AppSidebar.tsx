@@ -51,6 +51,7 @@ export function AppSidebar() {
 
       <nav className="px-3 mt-4 flex-1 space-y-0.5 overflow-y-auto">
         {nav.map((item) => {
+          if ("requiresRole" in item && item.requiresRole && !roles.includes(item.requiresRole)) return null;
           const active = pathname.startsWith(item.to);
           const Icon = item.icon;
           return (
