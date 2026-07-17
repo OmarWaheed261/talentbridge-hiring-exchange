@@ -116,9 +116,7 @@ export const listAuditLogs = createServerFn({ method: "POST" })
     if (data.search) {
       const s = `%${data.search}%`;
       q = q.or(
-        `actor_email.ilike.${s},action.ilike.${s},resource_id.ilike.${s},resource_type.ilike.${s},metadata.cs.${JSON.stringify({})}`
-          .replace(/,metadata\.cs\.\{\}$/, "") +
-          `,metadata::text.ilike.${s}`,
+        `actor_email.ilike.${s},action.ilike.${s},resource_id.ilike.${s},resource_type.ilike.${s}`,
       );
     }
 
