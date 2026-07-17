@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const nav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/job-search", label: "Job Search", icon: Search },
   { to: "/jobs", label: "Jobs", icon: Briefcase },
   { to: "/job-collection", label: "Job Collection Engine", icon: Radar },
   { to: "/candidates", label: "Candidates", icon: Users },
