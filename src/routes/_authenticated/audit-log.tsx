@@ -182,7 +182,7 @@ function AuditLogPage() {
             <SelectContent>
               <SelectItem value="all">All consultancies</SelectItem>
               {consultancies.map((c) => (
-                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
