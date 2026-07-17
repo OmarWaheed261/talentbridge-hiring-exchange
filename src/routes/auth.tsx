@@ -10,6 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" ? s.next : undefined,
+  }),
   component: AuthPage,
   head: () => ({
     meta: [
@@ -30,8 +33,17 @@ export const Route = createFileRoute("/auth")({
   }),
 });
 
+// Only allow same-origin relative paths as post-auth destinations.
+function safeNext(next: string | undefined): string | null {
+  if (!next || !next.startsWith("/") || next.startsWith("//")) return null;
+  return next;
+}
+
+
 function AuthPage() {
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
+  const dest = safeNext(next);
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,9 +52,17 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/dashboard" });
+      if (data.session) {
+        if (dest) window.location.assign(dest);
+        else navigate({ to: "/dashboard" });
+      }
     });
-  }, [navigate]);
+  }, [navigate, dest]);
+
+  const goAfterAuth = () => {
+    if (dest) window.location.assign(dest);
+    else navigate({ to: "/dashboard" });
+  };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,18 +72,18 @@ function AuthPage() {
         const { error } = await supabase.auth.signUp({
           email, password,
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: dest ? window.location.origin + dest : window.location.origin,
             data: { full_name: name },
           },
         });
         if (error) throw error;
         toast.success("Account created — welcome aboard!");
-        navigate({ to: "/dashboard" });
+        goAfterAuth();
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Signed in");
-        navigate({ to: "/dashboard" });
+        goAfterAuth();
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Authentication failed");
@@ -71,6 +91,7 @@ function AuthPage() {
       setLoading(false);
     }
   };
+
 
   return (
     <main className="min-h-screen flex">
