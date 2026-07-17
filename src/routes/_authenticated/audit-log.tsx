@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { RefreshCw, Search, Filter, X, Radio } from "lucide-react";
+import { RefreshCw, Search, Filter, X, Radio, Download, FileText, FileSpreadsheet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/PageHeader";
@@ -13,7 +13,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { listAuditLogs, listAuditFacets } from "@/lib/audit-log.functions";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { listAuditLogs, listAuditFacets, exportAuditLogsData } from "@/lib/audit-log.functions";
+import { exportAuditRowsAsCSV, exportAuditRowsAsPDF, type AuditRow } from "@/lib/audit-log-export";
 import { useAuth } from "@/lib/auth";
 import { format } from "date-fns";
 
@@ -44,8 +53,10 @@ function AuditLogPage() {
   const isSuper = roles.includes("super_admin");
   const listFn = useServerFn(listAuditLogs);
   const facetsFn = useServerFn(listAuditFacets);
+  const exportFn = useServerFn(exportAuditLogsData);
   const queryClient = useQueryClient();
   const [live, setLive] = useState<"connecting" | "live" | "off">("connecting");
+  const [exporting, setExporting] = useState<"csv" | "pdf" | null>(null);
 
 
 
@@ -150,6 +161,62 @@ function AuditLogPage() {
     setDateTo("");
   };
 
+  const filterPayload = () => ({
+    event_type: eventType === "all" ? null : eventType,
+    status: status === "all" ? null : status,
+    action: action === "all" ? null : action,
+    consultancy_id: consultancyId === "all" ? null : consultancyId,
+    actor: actor.trim() || null,
+    search: search.trim() || null,
+    from: dateFrom ? new Date(dateFrom).toISOString() : null,
+    to: dateTo ? new Date(dateTo + "T23:59:59").toISOString() : null,
+  });
+
+  const handleExport = async (fmt: "csv" | "pdf") => {
+    setExporting(fmt);
+    const toastId = toast.loading(`Preparing ${fmt.toUpperCase()} export…`);
+    try {
+      const res = await exportFn({ data: { ...filterPayload(), limit: 10000 } });
+      const rows = (res.rows ?? []) as AuditRow[];
+      if (rows.length === 0) {
+        toast.dismiss(toastId);
+        toast.info("No audit events match these filters.");
+        return;
+      }
+      const stamp = format(new Date(), "yyyyMMdd-HHmmss");
+      const base = `audit-log-${stamp}`;
+      if (fmt === "csv") {
+        exportAuditRowsAsCSV(rows, base);
+      } else {
+        const consultancyName =
+          consultancyId === "all"
+            ? null
+            : (facets.data?.consultancies ?? []).find((c) => c.id === consultancyId)?.company_name ?? consultancyId;
+        exportAuditRowsAsPDF(rows, base, {
+          filters: {
+            event_type: eventType,
+            action,
+            status,
+            consultancy: consultancyName,
+            actor: actor || null,
+            search: search || null,
+            from: dateFrom || null,
+            to: dateTo || null,
+          },
+          generatedAt: res.generated_at,
+        });
+      }
+      toast.success(`Exported ${rows.length.toLocaleString()} events as ${fmt.toUpperCase()}`, {
+        id: toastId,
+        description: rows.length === 10000 ? "Result capped at 10,000 rows — refine filters for a narrower set." : undefined,
+      });
+    } catch (err) {
+      toast.error(`Export failed: ${err instanceof Error ? err.message : "Unknown error"}`, { id: toastId });
+    } finally {
+      setExporting(null);
+    }
+  };
+
   if (!isSuper) {
     return (
       <div className="p-6">
@@ -190,6 +257,24 @@ function AuditLogPage() {
               <RefreshCw className={`h-4 w-4 mr-2 ${query.isFetching ? "animate-spin" : ""}`} />
               Refresh
             </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" disabled={exporting !== null || query.isLoading}>
+                  <Download className={`h-4 w-4 mr-2 ${exporting ? "animate-pulse" : ""}`} />
+                  {exporting ? `Exporting ${exporting.toUpperCase()}…` : "Export"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Incident report</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => handleExport("csv")}>
+                  <FileSpreadsheet className="h-4 w-4 mr-2" /> CSV (spreadsheet)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport("pdf")}>
+                  <FileText className="h-4 w-4 mr-2" /> PDF (formatted)
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         }
 
