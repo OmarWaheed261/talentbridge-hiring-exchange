@@ -56,7 +56,7 @@ function AuditLogPage() {
   if (!isSuper) {
     return (
       <div className="p-6">
-        <PageHeader title="Audit Log" description="Restricted area" icon={ShieldCheck} />
+        <PageHeader title="Audit Log" description="Restricted area" />
         <Card className="mt-6">
           <CardContent className="p-8 text-center text-muted-foreground">
             You need the <Badge variant="outline">super_admin</Badge> role to view the audit log.
