@@ -54,6 +54,8 @@ const listSchema = z.object({
   action: z.string().nullish(),
   status: z.enum(["success", "failure"]).nullish(),
   search: z.string().nullish(),
+  actor: z.string().nullish(),
+  consultancy_id: z.string().uuid().nullish(),
   from: z.string().nullish(),
   to: z.string().nullish(),
   page: z.number().int().min(1).default(1),
@@ -87,12 +89,65 @@ export const listAuditLogs = createServerFn({ method: "POST" })
     if (data.status) q = q.eq("status", data.status);
     if (data.from) q = q.gte("created_at", data.from);
     if (data.to) q = q.lte("created_at", data.to);
+
+    if (data.actor) {
+      const a = data.actor.trim();
+      // UUID → actor_id equality; otherwise email ilike
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(a);
+      if (isUuid) {
+        q = q.or(`actor_id.eq.${a},target_user_id.eq.${a}`);
+      } else {
+        q = q.ilike("actor_email", `%${a}%`);
+      }
+    }
+
+    if (data.consultancy_id) {
+      const { data: members } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("consultancy_id", data.consultancy_id);
+      const ids = (members ?? []).map((m) => m.id);
+      if (ids.length === 0) {
+        return { rows: [], total: 0, page: data.page, pageSize: data.pageSize };
+      }
+      q = q.in("actor_id", ids);
+    }
+
     if (data.search) {
       const s = `%${data.search}%`;
-      q = q.or(`actor_email.ilike.${s},action.ilike.${s},resource_id.ilike.${s}`);
+      q = q.or(
+        `actor_email.ilike.${s},action.ilike.${s},resource_id.ilike.${s},resource_type.ilike.${s},metadata.cs.${JSON.stringify({})}`
+          .replace(/,metadata\.cs\.\{\}$/, "") +
+          `,metadata::text.ilike.${s}`,
+      );
     }
 
     const { data: rows, error, count } = await q;
     if (error) throw new Error(error.message);
+
+    // Fetch distinct actions for the filter dropdown (best-effort)
     return { rows: rows ?? [], total: count ?? 0, page: data.page, pageSize: data.pageSize };
+  });
+
+export const listAuditFacets = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: isSuper } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "super_admin",
+    });
+    if (!isSuper) throw new Error("Forbidden: super_admin role required");
+
+    const [actionsRes, consultanciesRes] = await Promise.all([
+      supabase.from("audit_logs").select("action").order("action").limit(1000),
+      supabase.from("consultancies").select("id, name").order("name"),
+    ]);
+    const actions = Array.from(
+      new Set((actionsRes.data ?? []).map((r) => r.action).filter(Boolean)),
+    );
+    return {
+      actions,
+      consultancies: consultanciesRes.data ?? [],
+    };
   });
