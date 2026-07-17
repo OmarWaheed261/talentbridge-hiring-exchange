@@ -53,8 +53,10 @@ function AuditLogPage() {
   const isSuper = roles.includes("super_admin");
   const listFn = useServerFn(listAuditLogs);
   const facetsFn = useServerFn(listAuditFacets);
+  const exportFn = useServerFn(exportAuditLogsData);
   const queryClient = useQueryClient();
   const [live, setLive] = useState<"connecting" | "live" | "off">("connecting");
+  const [exporting, setExporting] = useState<"csv" | "pdf" | null>(null);
 
 
 
