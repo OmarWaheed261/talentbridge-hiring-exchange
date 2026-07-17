@@ -44,6 +44,10 @@ function AuditLogPage() {
   const isSuper = roles.includes("super_admin");
   const listFn = useServerFn(listAuditLogs);
   const facetsFn = useServerFn(listAuditFacets);
+  const queryClient = useQueryClient();
+  const [live, setLive] = useState<"connecting" | "live" | "off">("connecting");
+
+
 
   const [eventType, setEventType] = useState<EventType | "all">("all");
   const [status, setStatus] = useState<"all" | "success" | "failure">("all");
