@@ -9,61 +9,50 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as McpRouteImport } from './routes/mcp'
-import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as GuidesAutomationRouteImport } from './routes/guides/automation'
-import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
-import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
-import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
-import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
-import { Route as AuthenticatedJobSearchRouteImport } from './routes/_authenticated/job-search'
-import { Route as AuthenticatedJobCollectionRouteImport } from './routes/_authenticated/job-collection'
-import { Route as AuthenticatedHealthRouteImport } from './routes/_authenticated/health'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedConsultanciesRouteImport } from './routes/_authenticated/consultancies'
-import { Route as AuthenticatedCandidatesRouteImport } from './routes/_authenticated/candidates'
-import { Route as AuthenticatedAutomationRouteImport } from './routes/_authenticated/automation'
-import { Route as AuthenticatedAuditLogRouteImport } from './routes/_authenticated/audit-log'
-import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as McpRouteImport } from './routes/mcp'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
-import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
-import { Route as AuthenticatedJobsJobIdRouteImport } from './routes/_authenticated/jobs.$jobId'
-import { Route as AuthenticatedJobSearchJobIdRouteImport } from './routes/_authenticated/job-search.$jobId'
-import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as AuthenticatedAuditLogRouteImport } from './routes/_authenticated/audit-log'
+import { Route as AuthenticatedAutomationRouteImport } from './routes/_authenticated/automation'
+import { Route as AuthenticatedCandidatesRouteImport } from './routes/_authenticated/candidates'
+import { Route as AuthenticatedConsultanciesRouteImport } from './routes/_authenticated/consultancies'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedHealthRouteImport } from './routes/_authenticated/health'
+import { Route as AuthenticatedJobCollectionRouteImport } from './routes/_authenticated/job-collection'
+import { Route as AuthenticatedJobSearchRouteImport } from './routes/_authenticated/job-search'
+import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as GuidesAutomationRouteImport } from './routes/guides/automation'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
-import { Route as ApiPublicN8nNotifyRouteImport } from './routes/api/public/n8n/notify'
-import { Route as ApiPublicN8nJobsRouteImport } from './routes/api/public/n8n/jobs'
-import { Route as ApiPublicN8nJobStatusEventsRouteImport } from './routes/api/public/n8n/job-status-events'
-import { Route as ApiPublicN8nHealthRouteImport } from './routes/api/public/n8n/health'
-import { Route as ApiPublicN8nExportJobsRouteImport } from './routes/api/public/n8n/export-jobs'
-import { Route as ApiPublicN8nCollectedJobsRouteImport } from './routes/api/public/n8n/collected-jobs'
-import { Route as ApiPublicN8nCandidatesRouteImport } from './routes/api/public/n8n/candidates'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as AuthenticatedJobSearchJobIdRouteImport } from './routes/_authenticated/job-search.$jobId'
+import { Route as AuthenticatedJobsJobIdRouteImport } from './routes/_authenticated/jobs.$jobId'
+import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as ApiPublicN8nAutomationLogsRouteImport } from './routes/api/public/n8n/automation-logs'
+import { Route as ApiPublicN8nCandidatesRouteImport } from './routes/api/public/n8n/candidates'
+import { Route as ApiPublicN8nCollectedJobsRouteImport } from './routes/api/public/n8n/collected-jobs'
+import { Route as ApiPublicN8nExportJobsRouteImport } from './routes/api/public/n8n/export-jobs'
+import { Route as ApiPublicN8nHealthRouteImport } from './routes/api/public/n8n/health'
+import { Route as ApiPublicN8nJobStatusEventsRouteImport } from './routes/api/public/n8n/job-status-events'
+import { Route as ApiPublicN8nJobsRouteImport } from './routes/api/public/n8n/jobs'
+import { Route as ApiPublicN8nNotifyRouteImport } from './routes/api/public/n8n/notify'
 import { Route as ApiPublicN8nTemplatesTemplateNameRouteImport } from './routes/api/public/n8n/templates.$templateName'
 
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
-  id: '/forgot-password',
-  path: '/forgot-password',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -71,60 +60,51 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GuidesAutomationRoute = GuidesAutomationRouteImport.update({
-  id: '/guides/automation',
-  path: '/guides/automation',
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedNotificationsRoute =
-  AuthenticatedNotificationsRouteImport.update({
-    id: '/notifications',
-    path: '/notifications',
-    getParentRoute: () => AuthenticatedRouteRoute,
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
   } as any)
-const AuthenticatedJobsRoute = AuthenticatedJobsRouteImport.update({
-  id: '/jobs',
-  path: '/jobs',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedJobSearchRoute = AuthenticatedJobSearchRouteImport.update({
-  id: '/job-search',
-  path: '/job-search',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedJobCollectionRoute =
-  AuthenticatedJobCollectionRouteImport.update({
-    id: '/job-collection',
-    path: '/job-collection',
-    getParentRoute: () => AuthenticatedRouteRoute,
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
   } as any)
-const AuthenticatedHealthRoute = AuthenticatedHealthRouteImport.update({
-  id: '/health',
-  path: '/health',
+const AuthenticatedAuditLogRoute = AuthenticatedAuditLogRouteImport.update({
+  id: '/audit-log',
+  path: '/audit-log',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const AuthenticatedAutomationRoute = AuthenticatedAutomationRouteImport.update({
+  id: '/automation',
+  path: '/automation',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCandidatesRoute = AuthenticatedCandidatesRouteImport.update({
+  id: '/candidates',
+  path: '/candidates',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedConsultanciesRoute =
@@ -133,95 +113,78 @@ const AuthenticatedConsultanciesRoute =
     path: '/consultancies',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedCandidatesRoute = AuthenticatedCandidatesRouteImport.update({
-  id: '/candidates',
-  path: '/candidates',
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedAutomationRoute = AuthenticatedAutomationRouteImport.update({
-  id: '/automation',
-  path: '/automation',
+const AuthenticatedHealthRoute = AuthenticatedHealthRouteImport.update({
+  id: '/health',
+  path: '/health',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedAuditLogRoute = AuthenticatedAuditLogRouteImport.update({
-  id: '/audit-log',
-  path: '/audit-log',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const Char91DotwellKnownChar93OauthProtectedResourceRoute =
-  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
-    id: '/.well-known/oauth-protected-resource',
-    path: '/.well-known/oauth-protected-resource',
-    getParentRoute: () => rootRouteImport,
+const AuthenticatedJobCollectionRoute =
+  AuthenticatedJobCollectionRouteImport.update({
+    id: '/job-collection',
+    path: '/job-collection',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const Char91DotmcpChar93ListToolsRoute =
-  Char91DotmcpChar93ListToolsRouteImport.update({
-    id: '/.mcp/list-tools',
-    path: '/.mcp/list-tools',
-    getParentRoute: () => rootRouteImport,
+const AuthenticatedJobSearchRoute = AuthenticatedJobSearchRouteImport.update({
+  id: '/job-search',
+  path: '/job-search',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedJobsRoute = AuthenticatedJobsRouteImport.update({
+  id: '/jobs',
+  path: '/jobs',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
-  id: '/api/public/health',
-  path: '/api/public/health',
+const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const GuidesAutomationRoute = GuidesAutomationRouteImport.update({
+  id: '/guides/automation',
+  path: '/guides/automation',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedJobsJobIdRoute = AuthenticatedJobsJobIdRouteImport.update({
-  id: '/$jobId',
-  path: '/$jobId',
-  getParentRoute: () => AuthenticatedJobsRoute,
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedJobSearchJobIdRoute =
-  AuthenticatedJobSearchJobIdRouteImport.update({
-    id: '/$jobId',
-    path: '/$jobId',
-    getParentRoute: () => AuthenticatedJobSearchRoute,
-  } as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
     path: '/.mcp/invoke-tool/$tool',
     getParentRoute: () => rootRouteImport,
   } as any)
-const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
-  id: '/.lovable/oauth/consent',
-  path: '/.lovable/oauth/consent',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicN8nNotifyRoute = ApiPublicN8nNotifyRouteImport.update({
-  id: '/api/public/n8n/notify',
-  path: '/api/public/n8n/notify',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicN8nJobsRoute = ApiPublicN8nJobsRouteImport.update({
-  id: '/api/public/n8n/jobs',
-  path: '/api/public/n8n/jobs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicN8nJobStatusEventsRoute =
-  ApiPublicN8nJobStatusEventsRouteImport.update({
-    id: '/api/public/n8n/job-status-events',
-    path: '/api/public/n8n/job-status-events',
-    getParentRoute: () => rootRouteImport,
+const AuthenticatedJobSearchJobIdRoute =
+  AuthenticatedJobSearchJobIdRouteImport.update({
+    id: '/$jobId',
+    path: '/$jobId',
+    getParentRoute: () => AuthenticatedJobSearchRoute,
   } as any)
-const ApiPublicN8nHealthRoute = ApiPublicN8nHealthRouteImport.update({
-  id: '/api/public/n8n/health',
-  path: '/api/public/n8n/health',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedJobsJobIdRoute = AuthenticatedJobsJobIdRouteImport.update({
+  id: '/$jobId',
+  path: '/$jobId',
+  getParentRoute: () => AuthenticatedJobsRoute,
 } as any)
-const ApiPublicN8nExportJobsRoute = ApiPublicN8nExportJobsRouteImport.update({
-  id: '/api/public/n8n/export-jobs',
-  path: '/api/public/n8n/export-jobs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicN8nCollectedJobsRoute =
-  ApiPublicN8nCollectedJobsRouteImport.update({
-    id: '/api/public/n8n/collected-jobs',
-    path: '/api/public/n8n/collected-jobs',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicN8nCandidatesRoute = ApiPublicN8nCandidatesRouteImport.update({
-  id: '/api/public/n8n/candidates',
-  path: '/api/public/n8n/candidates',
+const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
+  id: '/api/public/health',
+  path: '/api/public/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicN8nAutomationLogsRoute =
@@ -230,6 +193,43 @@ const ApiPublicN8nAutomationLogsRoute =
     path: '/api/public/n8n/automation-logs',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicN8nCandidatesRoute = ApiPublicN8nCandidatesRouteImport.update({
+  id: '/api/public/n8n/candidates',
+  path: '/api/public/n8n/candidates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicN8nCollectedJobsRoute =
+  ApiPublicN8nCollectedJobsRouteImport.update({
+    id: '/api/public/n8n/collected-jobs',
+    path: '/api/public/n8n/collected-jobs',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicN8nExportJobsRoute = ApiPublicN8nExportJobsRouteImport.update({
+  id: '/api/public/n8n/export-jobs',
+  path: '/api/public/n8n/export-jobs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicN8nHealthRoute = ApiPublicN8nHealthRouteImport.update({
+  id: '/api/public/n8n/health',
+  path: '/api/public/n8n/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicN8nJobStatusEventsRoute =
+  ApiPublicN8nJobStatusEventsRouteImport.update({
+    id: '/api/public/n8n/job-status-events',
+    path: '/api/public/n8n/job-status-events',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicN8nJobsRoute = ApiPublicN8nJobsRouteImport.update({
+  id: '/api/public/n8n/jobs',
+  path: '/api/public/n8n/jobs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicN8nNotifyRoute = ApiPublicN8nNotifyRouteImport.update({
+  id: '/api/public/n8n/notify',
+  path: '/api/public/n8n/notify',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicN8nTemplatesTemplateNameRoute =
   ApiPublicN8nTemplatesTemplateNameRouteImport.update({
     id: '/api/public/n8n/templates/$templateName',
@@ -492,39 +492,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/forgot-password': {
-      id: '/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/forgot-password'
-      preLoaderRoute: typeof ForgotPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -534,109 +506,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/guides/automation': {
-      id: '/guides/automation'
-      path: '/guides/automation'
-      fullPath: '/guides/automation'
-      preLoaderRoute: typeof GuidesAutomationRouteImport
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/settings': {
-      id: '/_authenticated/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/reports': {
-      id: '/_authenticated/reports'
-      path: '/reports'
-      fullPath: '/reports'
-      preLoaderRoute: typeof AuthenticatedReportsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/notifications': {
-      id: '/_authenticated/notifications'
-      path: '/notifications'
-      fullPath: '/notifications'
-      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/jobs': {
-      id: '/_authenticated/jobs'
-      path: '/jobs'
-      fullPath: '/jobs'
-      preLoaderRoute: typeof AuthenticatedJobsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/job-search': {
-      id: '/_authenticated/job-search'
-      path: '/job-search'
-      fullPath: '/job-search'
-      preLoaderRoute: typeof AuthenticatedJobSearchRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/job-collection': {
-      id: '/_authenticated/job-collection'
-      path: '/job-collection'
-      fullPath: '/job-collection'
-      preLoaderRoute: typeof AuthenticatedJobCollectionRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/health': {
-      id: '/_authenticated/health'
-      path: '/health'
-      fullPath: '/health'
-      preLoaderRoute: typeof AuthenticatedHealthRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/consultancies': {
-      id: '/_authenticated/consultancies'
-      path: '/consultancies'
-      fullPath: '/consultancies'
-      preLoaderRoute: typeof AuthenticatedConsultanciesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/candidates': {
-      id: '/_authenticated/candidates'
-      path: '/candidates'
-      fullPath: '/candidates'
-      preLoaderRoute: typeof AuthenticatedCandidatesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/automation': {
-      id: '/_authenticated/automation'
-      path: '/automation'
-      fullPath: '/automation'
-      preLoaderRoute: typeof AuthenticatedAutomationRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/audit-log': {
-      id: '/_authenticated/audit-log'
-      path: '/audit-log'
-      fullPath: '/audit-log'
-      preLoaderRoute: typeof AuthenticatedAuditLogRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/.well-known/oauth-protected-resource': {
-      id: '/.well-known/oauth-protected-resource'
-      path: '/.well-known/oauth-protected-resource'
-      fullPath: '/.well-known/oauth-protected-resource'
-      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.mcp/list-tools': {
@@ -646,32 +548,102 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/health': {
-      id: '/api/public/health'
-      path: '/api/public/health'
-      fullPath: '/api/public/health'
-      preLoaderRoute: typeof ApiPublicHealthRouteImport
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/jobs/$jobId': {
-      id: '/_authenticated/jobs/$jobId'
-      path: '/$jobId'
-      fullPath: '/jobs/$jobId'
-      preLoaderRoute: typeof AuthenticatedJobsJobIdRouteImport
-      parentRoute: typeof AuthenticatedJobsRoute
+    '/_authenticated/audit-log': {
+      id: '/_authenticated/audit-log'
+      path: '/audit-log'
+      fullPath: '/audit-log'
+      preLoaderRoute: typeof AuthenticatedAuditLogRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/job-search/$jobId': {
-      id: '/_authenticated/job-search/$jobId'
-      path: '/$jobId'
-      fullPath: '/job-search/$jobId'
-      preLoaderRoute: typeof AuthenticatedJobSearchJobIdRouteImport
-      parentRoute: typeof AuthenticatedJobSearchRoute
+    '/_authenticated/automation': {
+      id: '/_authenticated/automation'
+      path: '/automation'
+      fullPath: '/automation'
+      preLoaderRoute: typeof AuthenticatedAutomationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/.mcp/invoke-tool/$tool': {
-      id: '/.mcp/invoke-tool/$tool'
-      path: '/.mcp/invoke-tool/$tool'
-      fullPath: '/.mcp/invoke-tool/$tool'
-      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
+    '/_authenticated/candidates': {
+      id: '/_authenticated/candidates'
+      path: '/candidates'
+      fullPath: '/candidates'
+      preLoaderRoute: typeof AuthenticatedCandidatesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/consultancies': {
+      id: '/_authenticated/consultancies'
+      path: '/consultancies'
+      fullPath: '/consultancies'
+      preLoaderRoute: typeof AuthenticatedConsultanciesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/health': {
+      id: '/_authenticated/health'
+      path: '/health'
+      fullPath: '/health'
+      preLoaderRoute: typeof AuthenticatedHealthRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/job-collection': {
+      id: '/_authenticated/job-collection'
+      path: '/job-collection'
+      fullPath: '/job-collection'
+      preLoaderRoute: typeof AuthenticatedJobCollectionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/job-search': {
+      id: '/_authenticated/job-search'
+      path: '/job-search'
+      fullPath: '/job-search'
+      preLoaderRoute: typeof AuthenticatedJobSearchRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/jobs': {
+      id: '/_authenticated/jobs'
+      path: '/jobs'
+      fullPath: '/jobs'
+      preLoaderRoute: typeof AuthenticatedJobsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/reports': {
+      id: '/_authenticated/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AuthenticatedReportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/guides/automation': {
+      id: '/guides/automation'
+      path: '/guides/automation'
+      fullPath: '/guides/automation'
+      preLoaderRoute: typeof GuidesAutomationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.lovable/oauth/consent': {
@@ -681,46 +653,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/n8n/notify': {
-      id: '/api/public/n8n/notify'
-      path: '/api/public/n8n/notify'
-      fullPath: '/api/public/n8n/notify'
-      preLoaderRoute: typeof ApiPublicN8nNotifyRouteImport
+    '/.mcp/invoke-tool/$tool': {
+      id: '/.mcp/invoke-tool/$tool'
+      path: '/.mcp/invoke-tool/$tool'
+      fullPath: '/.mcp/invoke-tool/$tool'
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/n8n/jobs': {
-      id: '/api/public/n8n/jobs'
-      path: '/api/public/n8n/jobs'
-      fullPath: '/api/public/n8n/jobs'
-      preLoaderRoute: typeof ApiPublicN8nJobsRouteImport
+    '/_authenticated/job-search/$jobId': {
+      id: '/_authenticated/job-search/$jobId'
+      path: '/$jobId'
+      fullPath: '/job-search/$jobId'
+      preLoaderRoute: typeof AuthenticatedJobSearchJobIdRouteImport
+      parentRoute: typeof AuthenticatedJobSearchRoute
+    }
+    '/_authenticated/jobs/$jobId': {
+      id: '/_authenticated/jobs/$jobId'
+      path: '/$jobId'
+      fullPath: '/jobs/$jobId'
+      preLoaderRoute: typeof AuthenticatedJobsJobIdRouteImport
+      parentRoute: typeof AuthenticatedJobsRoute
+    }
+    '/api/public/health': {
+      id: '/api/public/health'
+      path: '/api/public/health'
+      fullPath: '/api/public/health'
+      preLoaderRoute: typeof ApiPublicHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/n8n/job-status-events': {
-      id: '/api/public/n8n/job-status-events'
-      path: '/api/public/n8n/job-status-events'
-      fullPath: '/api/public/n8n/job-status-events'
-      preLoaderRoute: typeof ApiPublicN8nJobStatusEventsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/n8n/health': {
-      id: '/api/public/n8n/health'
-      path: '/api/public/n8n/health'
-      fullPath: '/api/public/n8n/health'
-      preLoaderRoute: typeof ApiPublicN8nHealthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/n8n/export-jobs': {
-      id: '/api/public/n8n/export-jobs'
-      path: '/api/public/n8n/export-jobs'
-      fullPath: '/api/public/n8n/export-jobs'
-      preLoaderRoute: typeof ApiPublicN8nExportJobsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/n8n/collected-jobs': {
-      id: '/api/public/n8n/collected-jobs'
-      path: '/api/public/n8n/collected-jobs'
-      fullPath: '/api/public/n8n/collected-jobs'
-      preLoaderRoute: typeof ApiPublicN8nCollectedJobsRouteImport
+    '/api/public/n8n/automation-logs': {
+      id: '/api/public/n8n/automation-logs'
+      path: '/api/public/n8n/automation-logs'
+      fullPath: '/api/public/n8n/automation-logs'
+      preLoaderRoute: typeof ApiPublicN8nAutomationLogsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/n8n/candidates': {
@@ -730,11 +695,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicN8nCandidatesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/n8n/automation-logs': {
-      id: '/api/public/n8n/automation-logs'
-      path: '/api/public/n8n/automation-logs'
-      fullPath: '/api/public/n8n/automation-logs'
-      preLoaderRoute: typeof ApiPublicN8nAutomationLogsRouteImport
+    '/api/public/n8n/collected-jobs': {
+      id: '/api/public/n8n/collected-jobs'
+      path: '/api/public/n8n/collected-jobs'
+      fullPath: '/api/public/n8n/collected-jobs'
+      preLoaderRoute: typeof ApiPublicN8nCollectedJobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/n8n/export-jobs': {
+      id: '/api/public/n8n/export-jobs'
+      path: '/api/public/n8n/export-jobs'
+      fullPath: '/api/public/n8n/export-jobs'
+      preLoaderRoute: typeof ApiPublicN8nExportJobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/n8n/health': {
+      id: '/api/public/n8n/health'
+      path: '/api/public/n8n/health'
+      fullPath: '/api/public/n8n/health'
+      preLoaderRoute: typeof ApiPublicN8nHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/n8n/job-status-events': {
+      id: '/api/public/n8n/job-status-events'
+      path: '/api/public/n8n/job-status-events'
+      fullPath: '/api/public/n8n/job-status-events'
+      preLoaderRoute: typeof ApiPublicN8nJobStatusEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/n8n/jobs': {
+      id: '/api/public/n8n/jobs'
+      path: '/api/public/n8n/jobs'
+      fullPath: '/api/public/n8n/jobs'
+      preLoaderRoute: typeof ApiPublicN8nJobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/n8n/notify': {
+      id: '/api/public/n8n/notify'
+      path: '/api/public/n8n/notify'
+      fullPath: '/api/public/n8n/notify'
+      preLoaderRoute: typeof ApiPublicN8nNotifyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/n8n/templates/$templateName': {
