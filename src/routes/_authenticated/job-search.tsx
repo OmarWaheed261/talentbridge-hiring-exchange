@@ -392,11 +392,11 @@ function JobSearchPage() {
           {/* Pagination */}
           <div className="flex items-center justify-end gap-2">
             <Button variant="outline" size="sm" disabled={search.page <= 1}
-              onClick={() => navigate({ to: ".", search: (p) => ({ ...p, page: Math.max(1, p.page - 1) }), replace: true })}>
+              onClick={() => navigate({ to: ".", search: (p) => ({ ...p, page: Math.max(1, (p.page ?? 1) - 1) }), replace: true })}>
               <ChevronLeft className="h-4 w-4" />Prev
             </Button>
             <Button variant="outline" size="sm" disabled={search.page >= totalPages}
-              onClick={() => navigate({ to: ".", search: (p) => ({ ...p, page: p.page + 1 }), replace: true })}>
+              onClick={() => navigate({ to: ".", search: (p) => ({ ...p, page: (p.page ?? 1) + 1 }), replace: true })}>
               Next<ChevronRight className="h-4 w-4" />
             </Button>
           </div>
