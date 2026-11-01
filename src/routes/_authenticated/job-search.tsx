@@ -152,8 +152,8 @@ function JobSearchPage() {
   const clearFilter = (k: string, v?: string) => {
     navigate({ to: ".", search: (p) => {
       const next = { ...p, page: 1 };
-      if (k === "skills" || k === "tags") next[k] = (p[k] as string[]).filter((x) => x !== v);
-      else next[k] = "";
+      if (k === "skills" || k === "tags") next[k] = (p[k] as string[] | undefined)?.filter((x) => x !== v) ?? [];
+      else next[k as "q" | "location" | "employment_type" | "experience_level" | "source" | "sort" | "view"] = "";
       return next;
     }, replace: true });
   };
